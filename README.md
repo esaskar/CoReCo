@@ -8,8 +8,8 @@ CoReCo is a computational method for reconstructing metabolic networks of multip
 ## Software requirements
 
 1. [Python](http://www.python.org/getit/)
-2. [Perl](www.perl.org)
-3. [InterProScan](ftp://ftp.ebi.ac.uk/pub/databases/interpro/iprscan)
+2. [Perl](http://www.perl.org/)
+3. [InterProScan](ftp://ftp.ebi.ac.uk/pub/databases/interpro/iprscan/)
 4. [NCBI Blast+ toolkit](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
 5. [R](http://www.r-project.org/)
 6. Python module [newick](http://users-birc.au.dk/mailund/newick.html)
@@ -17,7 +17,7 @@ CoReCo is a computational method for reconstructing metabolic networks of multip
 
 ## Data requirements
 
-1. [UniProt (uniprot_sprot.fasta.gz, uniprot_sport.dat)](ftp://ftp.uniprot.org/pub/databases/uniprot/knowledgebase)
-2. [EC to GO mapping (ec2go)](http//www.geneontology.org/external2go/ec2go)
-3. [KEGG](http://www.kegg.jp/kegg/download)
+1. [UniProt (uniprot_sprot.fasta.gz, uniprot_sport.dat)](ftp://ftp.uniprot.org/pub/databases/uniprot/knowledgebase/)
+2. [EC to GO mapping (ec2go)](http//www.geneontology.org/external2go/ec2go/)
+3. [KEGG](http://www.kegg.jp/kegg/download/)
 4. GTG nrdb40
