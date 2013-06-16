@@ -9,8 +9,8 @@ CoReCo is a computational method for reconstructing metabolic networks of multip
 
 1. [Python](http://www.python.org/getit/)
 2. [Perl](http://www.perl.org/)
-3. [InterProScan](ftp://ftp.ebi.ac.uk/pub/databases/interpro/iprscan/)
-4. [NCBI Blast+ toolkit](ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+3. [InterProScan](http://ftp.ebi.ac.uk/pub/databases/interpro/iprscan/)
+4. [NCBI Blast+ toolkit](http://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
 5. [R](http://www.r-project.org/)
 6. Python module [newick](http://users-birc.au.dk/mailund/newick.html)
 7. [libsbml](http://sourceforge.net/projects/sbml/files/libsbml/5.7.0/stable/)
