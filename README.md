@@ -2,8 +2,8 @@
 
 CoReCo is a computational method for reconstructing metabolic networks of multiple species from protein sequence and phylogenetic data.
 
-1. [Software requirements]
-2. [Data requirements]
+1. [Software requirements](#software-requirements)
+2. [Data requirements](#data-requirements)
 
 ## Software requirements
 
