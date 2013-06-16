@@ -17,7 +17,7 @@ CoReCo is a computational method for reconstructing metabolic networks of multip
 
 ## Data requirements
 
-1. [UniProt (uniprot_sprot.fasta.gz, uniprot_sport.dat)](ftp://ftp.uniprot.org/pub/databases/uniprot/knowledgebase/)
-2. [EC to GO mapping (ec2go)](http//www.geneontology.org/external2go/ec2go/)
+1. [UniProt (uniprot_sprot.fasta.gz, uniprot_sport.dat)](http://ftp.uniprot.org/pub/databases/uniprot/knowledgebase/)
+2. [EC to GO mapping (ec2go)](http://www.geneontology.org/external2go/ec2go/)
 3. [KEGG](http://www.kegg.jp/kegg/download/)
 4. GTG nrdb40
