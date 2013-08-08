@@ -1,0 +1,520 @@
+\documentclass[11pt]{article}
+
+\usepackage{t1enc}
+\usepackage[latin1]{inputenc}
+\usepackage{ae, aecompl} % vector fonts
+\usepackage{graphicx}
+\usepackage{amsmath, amsthm, amssymb, amsfonts}
+\usepackage{algorithm, algpseudocode}
+\usepackage{url, comment, array}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{observation}{Observation}
+\newtheorem{remark}{Remark}
+\newtheorem{problem}{Problem}
+\newtheorem{definition}{Definition}
+
+
+\begin{document}
+
+
+
+\title{Atomic features and message passing}
+
+\author{Markus Heinonen, Juho Rousu}
+
+\maketitle
+
+\section{Introduction}
+
+Atom features are vectors of information concerning single atoms, often in relation with the surrounding molecular environment.  We define a set of useful atom features (such as atom distribution of neighborhood, or morgan index sum of k-neighborhood) and a generalized method to generate and compute these features for single atoms. This message passing algorithm has its roots in the bayesian factor graphs and iterative computation of likelihoods of probabilities.
+
+Atom features can be used in various applications. They are used in atom mapping algorithm as similarity function for similar looking atoms (cite heinonen10). In machine learning domain, atom features form the basis of various atomic and molecular kernels (cite swamidass05).
+
+
+\section{Mathematical background}
+
+\subsection{Molecule graphs, reactions and atom mappings}
+
+A \emph{molecule graph} $G = (V,E,L,W)$ is a graph with nodes $i \in V$ labeled by chemical elements $L(i) \in \{H,C,N,O,\ldots\} \forall i \in V$, and edges\footnote{all edges are considered undirected, thus the order of stating the nodes of an edge does not matter, $(i,j) \equiv (j,i)$.} $(i,j) \in E$ corresponding to covalent bonds, with integer weights $W(i,j) = 0,1,2 \forall (i,j) \in V^2$ corresponding to the bond order (no bond, single, double).
+
+The \emph{atom spectrum} of G is the vector $\alpha(G) = (\alpha_l(G))_l$, where $\alpha_l(G)$ is the number of atoms $i \in V$ with label $L(i) = l$. The \emph{bond type} of a pair of atoms with $W(i,j) > 0$ is the triplet $T(i,j) = (L(i),L(j),W(i,j))$. A \emph{bond spectrum} $\beta(G) = (\beta_l(G))_l$ is a vector, where $\beta_l(G)$ denotes the number of bonds of type $t$ in molecule graph $G$.
+
+A \emph{reaction} is a triplet $\rho = (R,P,M)$, where the $R$ (resp $P$) is a molecule graph called the \emph{reactant graph} (res. \emph{product graph}), represeting the set of reactant (resp. product) molecules. The \emph{atom mapping} M for a pair ($R$,$P$) is a relation $M \subset V_R \times V_P$, where $(i,j) \in M$ denotes that a reactant atom $i$ is mapped onto product atom $j$. The domain of $M$ is denoted $dom(M) = \{v | (v,u) \in M\} \subset V_R$ and the range $ran(M) = \{u | (v,u) \in M\} V_P$. An atom mapping is \emph{complete} if $dom(M) = V_R$ and if $ran(M) = V_P$, that is, every reactant atom is mapped to at least one product atom and vice versa. An atom mapping is \emph{valid} if the node labels of all mapped atoms agree: for all $(i,j) \in M$, $L_R(i) = L_P(j)$. A reaction $\rho = (R,P,M)$ is valid if $M$ is valid and complete and the graphs $R$ and $P$ have equal atom spectra.
+
+In general, an atom mapping does not need to be bijective, i.e. a reactant atom can be mapped onto several product atoms (or vice versa), for example when the participating molecules have symmetric orientations. Here, however, we restrict our atteation to bijective atom mappings. For bijective mappings, we use the function/inverse function shorthands $M(i) = j$ and $M^{-1}(j) = i$ for $(i,j) \in M$.
+
+
+\subsection{Atom neighborhoods}
+
+Atoms and nodes are both used interchangeably to denote the nodes of the molecular graph. 
+
+The $k$-neighborhood of atom $i \in V$ is an induced subgraph $H_k(i)$, which compromises of all atoms with maximum distance $k$ from atom $i$, $V(H_k(i)) = \{j \in V | d(i,j) \le k\}$, and all induced bonds. The distance function $d(\cdot,\cdot)$ is by default standard graph node distance, where distance between any two neighboring nodes is $1$. A geometrical or 3D distance can also be used. By definition, $H_0(i) = i$.
+
+We define $\eta$-neighorhood of any atom $i$ to span the whole molecular structure, i.e. $H_{\eta}(i) = G$ for all $i \in V(G)$.
+
+
+
+\section{Message passing}
+
+
+Message Passing (MP) is a method for information transfer in a graph. We shall collect information about the node (atom) contexts using MP. The message passing method is based on sending messages from node to node and summarization them with suitable functions.
+
+A Node \emph{feature function} for a node $x$ is defined
+
+\begin{equation}
+g(x) = g(x,z_1, \ldots, z_n) = g(x,Z),
+\end{equation}
+
+where the set $Z = z_1, \ldots, z_n$ contains the neighbors $n(x)$ of the node $x$. Feature $g(x,Z)$ is any characteristic derived from the node and its neighbors. Typical features are e.g. atom types (``C'', ``N'', etc.) or a vector $Val$.
+
+The algorithm works by passing \emph{messages} from node to node containing summarized feature information. Message $x \rightarrow y$ is defined to be the summarization of messages coming to $x$ (except from $y$) and the feature $g(x)$. We denote messages $(z_1 \rightarrow x, \ldots, z_{|n(x)|} \rightarrow x)$ as
+
+\begin{equation}
+M_{x} = \{ m_{z \rightarrow x} | z \in n(x) \},
+\end{equation}
+
+where $m_{z \rightarrow x}$ is the message from $z$ to $x$. Similarly we denote all messages into $x$ excluding message from $y$ as
+
+\begin{equation}
+M_{xy} = \{ m_{z \rightarrow x} | z \in n(x) \setminus \{y\} \}.
+\end{equation}
+
+The $k$'th message $x \rightarrow y$ is the summarized information of everything ``behind'' $y$ sent at round $k$:
+
+\begin{equation}
+m_{x \rightarrow y}^{(k)} = h_m\left( g(x,Z), M_{xy}^{(k-1)} \right).
+\end{equation}
+
+
+The \emph{message summarization function} $h_m(g(x,Z), M_{xy})$ summarizes the incoming messages and the feature function of the node itself. Typical functions for $h_m$ are sum, max and min functions. In these cases the notation can be simplified with operators. With summation operator we can denote
+
+\begin{equation}
+m_{x \rightarrow y}^{(k)} = g(x,Z) + \sum_{m \in M_{xy}} m^{(k-1)}.
+%z \in n(x) \setminus y} m_{z \rightarrow x}^{(k-1)}.
+\end{equation}
+
+Initially the messages are simply
+
+\begin{equation}
+m_{x \rightarrow y}^{(0)} = g(x,Z).
+\end{equation}
+
+\emph{Feature summarization function} $f^{(k)}(x)$ is defined as the summarization of the incoming messages and the feature of the node itself at at iteration $k$:
+
+\begin{equation}
+f^{(k)}(x) = h_f\left( g(x), M_{x} \right).
+\end{equation}
+
+The feature summarization function $f^{(k)}(x)$ is the $k$-context summarized graph invariant for subgraph $H_k(x)$. We define $f^{(0)}(x) = g(x)$.
+
+A message from atom to another is thus all information until the source atom combined with the information in the source atom. If the algorithm is run for each atom in each round, the message coming from a certain direction on round $d$ is a summarization of all nodes' information of that direction up to distance $d$.
+
+The features $f(x)$ won't cumulate and they can be computed again on each iteration. If the messages are computed without $g(x,Z)$ term, the initial feature values are only inserted to the system once. After that, these features propagate through the system and possibly circulate indefinitely. 
+
+\paragraph{Example: average clustering coefficient.}
+
+The clustering coefficient is a measure of degree of node clusteredness. The local clustering coefficient for node $i$ is defined $C_i = \frac{2|\{e_{jk}\}|}{k_i(k_i - 1)}$, where $v_j, v_k \in n(i)$, $e_{jk} \in E$. It is the proportion of edges in the neighbood of the node compared to maximum number of edges in it. The clustering coefficient for a graph is average clustering coefficient $\bar{C} = \frac{1}{n} \sum_{i=1}^n C_i$.
+
+To compute the $k$-context average clustering coefficient, we define:
+
+\begin{align}
+g(x) &= [C_x, 1] \in \mathbb{R}^2 \\
+m_{x \rightarrow y} &= \left[ \frac{g(x)[1]}{g(x)[2]} + \sum_{m \in M_{xy}} \frac{m[1]}{m[2]}, \quad g(x)[2] + \sum_{m \in M_{xy}} m[2] \right] \in \mathbb{R}^2\\
+%m_{x \rightarrow y} &= \left[ \frac{g(x)[1]}{g(x)[2]} + \sum_{z \in n(x) \setminus y} \frac{m_{z \rightarrow x}[1]}{m_{z \rightarrow y}[2]}, \quad g(x)[2] + \sum_{z \in n(x) \setminus y} m_{z \rightarrow x}[2] \right] \in \mathbb{R}^2\\
+%f(x) &= g(x)[1] + \sum_{z \in n(x)} \frac{m_{z \rightarrow x}[1]}{m_{z \rightarrow x}[2]}
+f(x) &= g(x)[1] + \sum_{m \in M_{x}} \frac{m[1]}{m[2]}
+\end{align}
+
+Here, $g(x) \in \mathbb{R}^2$, $m_{x \rightarrow y} \in \mathbb{R}^2$ and $f(x) \in \mathbb{R}$. The feature functions are two dimensional vectors holding the average clustering coefficient, and the count of nodes. Messages contain the same information for the subgraph ``behind'' the message. The average clustering coefficient is computed by summing the coefficients of different messages weighted by the size of the subgraph. Finally, feature summarization function combines the average clustering coefficients of all adjacent subgraphs of the central atom $x$.
+
+This formulation computes the values iteratively and uses same function to compute the ACC for messages and nodes. A more versatile formulation can be defined by using \emph{aggregating} messages, which collect node feature values and a separate function summarizes the information as a whole. We define:
+
+\begin{align}
+g(x) &= \{C_x\} \\
+m_{x \rightarrow y} &= g(x) \cup \bigcup_{m \in M_{xy}} m \\
+f(x) &= \frac{g(x)[1] + \sum_{m \in M_{x}} \sum_{c \in m} c}{1 + \sum_{m \in M_x} |m|}
+\end{align}
+
+Here, we aggregate a set of clustering coefficients of single nodes in the messages. The $f(x)$ function computes the ACC as a whole. This method needs more space, but is more versatile and is not constrained to feature summarization which can be computed online (associative functions?). This formulation can be further enhanced to work properly on cyclic graphs, where otherwise the messages would duplicate and accumulate clustering coefficients of single nodes over time. This can be fixed with a vector keeping track which nodes have been reached and their clustering coefficients.
+
+\begin{align}
+g(x) &= [\overbrace{\epsilon, \ldots, \epsilon}^{x-1}, C_x, \epsilon, \ldots] \in \mathbb{R}_{\epsilon}^n \\
+%g(i) &= [g_0, \ldots, g_n] \in \mathbb{R}_{\epsilon}^n \\
+%g_j(i) &= \left\{ \begin{array}{rl} 
+%C_i, & \text{if } i = j \\ 
+%\epsilon, & \text{otherwise} \end{array} \right. \\
+m_{x \rightarrow y} &= [u_0, \ldots, u_n] \in \mathbb{R}_{\epsilon}^n \\
+u_i &= \max_{m \in M_{xy} \cup g(x)} m[i] \\
+f(x) &= \frac{C_x + \sum_{i=0}^{n} \max_{m \in M_x} m[i]}{1 + \sum_{i=0}^n \mathbf{1}_{(\max_{m \in M_x} m[i]) \not = \epsilon}}
+\end{align}
+
+Here, $\mathbb{R}_{\epsilon} = \mathbb{R} \cup \{\epsilon\}$. The $sum$ and $max$ functions are defined in $\mathbb{R}_\epsilon$ as: $\max(\epsilon,a) = a$ and $\epsilon + a = a$ for all $a \in \mathbb{R}_\epsilon$.
+
+Alternatively one can define max-function to work on vectors pointwise: $\max: \mathbb{R}^d \times \mathbb{R}^d \mapsto \mathbb{R}^d$ such, that $\max([v_0,\ldots,v_d], [u_0, \ldots, u_d]) = [m_0, \ldots, m_d]$, where $m_d = \max(v_d, u_d)$. Then message $m_{x \rightarrow y}$ can be defined as
+
+\begin{equation}
+u_i = \max_{m \in M_{xy} \cup g(x)} m.
+\end{equation}
+
+
+These three types of feature values form the basis for different computations. The straightforward solution is usually to use aggregating vectors and summarization functions to process them as whole. The main idea is to have different summarization functions for messages ($h_m$) and nodes ($h_f$). One can acchieve more effective and simpler algorithms by computing the result partially during the message passing scheme. Here, summarization functions are often the same.
+
+
+
+\begin{comment}
+	\begin{align}
+	h_M(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x}) &= ( \sum(\{ \frac{g(x,Z)_1}{g(x,Z)_2}, \frac{M_{z_1 \rightarrow x,1}}{M_{z_1 \rightarrow x,2}}, \ldots, \frac{M_{z_{n'} \rightarrow x,1}}{M_{z_{n'} \rightarrow x,2}}\}) , \sum(\{g(x,Z)_2, M_{z_1 \rightarrow x,2}, \ldots, M_{z_{n'} \rightarrow x,2}\}) \\
+	h_f(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x}) &= h_M(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x})_1 \\
+	M_{x \rightarrow y} &= h_M(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x}) \\
+	f(x) &= h_f(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x})
+	\end{align}
+
+	Another formulation can be produced:
+
+	\begin{align}
+	g(x,Z) &= \{C_x\} \\
+	h_M(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x}) &= \{ i | i \in p : p \in \{ g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x} \}\} \\
+	h_f(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x}) &= \frac{\sum(h_M)}{|h_M|} \\
+	M_{x \rightarrow y} &= h_M(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x}) \\
+	f(x) &= h_f(g(x,Z), M_{z_1 \rightarrow x}, \ldots, M_{z_{n'} \rightarrow x})
+	\end{align}
+
+	This is more powerful.
+
+\end{comment}
+
+
+
+
+\begin{comment}
+	\emph{Feature summarization function} $f(x)$ is defined as the summarization of the incoming messages and (possibly) the feature of the node itself:
+
+	\begin{equation}
+	f(x) = g(x,Z) \oplus \bigoplus_{z \in n(x)} M_{z \rightarrow x}.
+	\end{equation}
+
+	The operator $\oplus$ can be any function. 
+
+	The message $x \rightarrow y$ is the summarized information of everything ``behind'' $y$, i.e. the summarization of messages $M_{z_i \rightarrow x}$ and feature $g(x,Z)$:
+
+	\begin{equation}
+	M_{x \rightarrow y} = g(x,Z) \oplus \bigoplus_{z \in n(x) \setminus \{y\}} M_{z \rightarrow x}.
+	\end{equation}
+
+	Initial messages are simply
+
+	\begin{equation}
+	M_{x \rightarrow y} = g(x,Z).
+	\end{equation}
+
+	A message from atom to another is thus all information until the source atom combined with the information in the source atom. If the algorithm is run for each atom in each round, the message coming from a certain direction on round $d$ is a summarization of all nodes' information of that direction up to distance $d$.
+
+	The features $f(x)$ won't cumulate and they can be computed again on each iteration. If the messages are computed without $g(x,Z)$ term, the initial feature values are only inserted to the system once. After that, these features propagate through the system and possibly circulate indefinitely. 
+
+	A feature can be real valued, probabilistic, vector, set or a distribution. The most useful feature value type is the feature vector $Val_i$ which contains a cell for each node. This vector is summarized by column.
+
+	Let's test the behaviour of the algorithm by setting the atom $x_i$ feature to $Val_i$ vector  $[\cdots 0 \underbrace{1}_{i\text{'th}} 0 \cdots]$. By summing these together, we get a pattern of the algorithm's progression.
+
+	With this formulation, we sum over \emph{exatcly} $k$-length paths. If the also compute $f(x)$ value every iteration, we get \emph{at most} $k$-length paths summarization.
+
+	The $f(x)$ function at iteration $d$ spans the $d$-context subgraph from the central node. Basic approach to do computation is to gather in messages $M$ a vector of feature values (the information about each node separately), and then work on them in them $f(x)$ function. This way, things like average degree can be computed easily. Average degree cannot be computed if messages are single values.
+
+\end{comment}
+
+
+\begin{algorithm}[htb]
+\caption{Algorithm A}
+\begin{algorithmic}
+\State $\#$ Initialize all messages to feature values
+\For{$\{x,y\} \in E$}
+ \State $M_{x \rightarrow y} = g(x,Z)$
+ \State $M_{y \rightarrow x} = g(y,Z)$
+\EndFor
+\For{$d = 1, \ldots, d_{max}$}
+ \For{$\{x,y\} \in E$}
+  \State $\#$ Sum over neighbours
+  \State $M_{x \rightarrow y} = g(x,Z) \oplus \bigoplus_{z \in n(x) \setminus \{y\}} M_{z \rightarrow x}$
+  \State $M_{y \rightarrow x} = g(y,Z) \oplus \bigoplus_{z \in n(y) \setminus \{x\}} M_{z \rightarrow y}$
+ \EndFor
+ \State $\#$ Update the feature values
+ \For{$x \in V$}
+  \State $f(x) = g(x,Z) \oplus \bigoplus_{z \in n(x)} f(z)$
+ \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+
+\subsection{Algorithm version B}
+
+The MP algorithm runs into trouble with cyclic graphs. The information propagates and is accumulated in a such way, that we can not anymore guarantee that a message from a certain direction contains only information from that direction. The algorithm can be changed to include also the information from the direction the message is going. We get a simple formalation, where each node sends the summarization of all neighbors and itself to all neighbors. This corresponds exactly to the Morgan's algorithm's message passing scheme.
+
+The summarized feature of a node is still
+
+\begin{equation}
+f(x) = g(x,Z) \oplus \bigoplus_{z \in n(x)} m_{z \rightarrow x}.
+\end{equation}
+
+Let's define that each node sends its own feature to neighbors:
+
+\begin{equation}
+m_{x \rightarrow y} = f(x).
+\end{equation}
+
+Now messages $M$ can be removed from the system
+
+\begin{equation}
+f(x) = g(x,Z) \oplus \bigoplus_{z \in n(x)} f(z).
+\end{equation}
+
+We end up in a simple algorithm, where on each iteration the node $x$ sends its feature value to a neighbor $y$, which summarizes all neighbors feature values with its own feature value. The algorithm initializes to $f(x) = g(x,Z)$.
+
+If we set $g(x,Z) = 0$ and values $f(x)$ are initialized as connectivity counts, we get Morgan's algorithm. Summarization function is the simple sum function. Each atoms features cumulate and each node ``pumps'' its values to its neighbors. Especially we note that on even rounds the neighbors of a node $x$ return the value of node $x$ back to itself.
+
+
+\begin{algorithm}[htb]
+\caption{Algorithm B}
+\begin{algorithmic}
+\State $\#$ Initialize all values
+\For{$x \in V$}
+ \State $f(x) = g(x,Z)$
+\EndFor
+\For{$d = 1, \ldots, d_{max}$}
+ \For{$x \in V$}
+  \State $\#$ Sum over neighbours
+  \State $f(x) = g(x,Z) \oplus \bigoplus_{z \in n(x)} f(z)$
+ \EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Locality and Globality}
+
+The message passing framework can work in two distinct modes: local and global. In the global mode, the summarization function $f(x)$ is different than the message function $M_{x \rightarrow y}$. In local mode, they are usually the same. With this distinction in the local mode the messages are \emph{partial solutions} to the feature function. The computation works iteratively during the algorithm and the feature function $f(x)$ can be computed directly from incoming messages. In this mode, the messages are usually single values or tuples, which are summarized on-line. In this model, the $f(x)$ and $M_{x \rightarrow y}$ both use same kind of summarization functions, and the result is gathered iteratively. An example of this is the number of redundant paths in $k$-context. Here, the message is simply a sum of previous messages and resulting $f(x)$ value is the sum of incoming messages. This method requires that the feature function gives correct results when applied recursively to itself. E.g. One cannot compute average degree with this. Also, this method doesn't take into account cycles in the graph and can duplicate information.
+
+In the global mode the messages are \emph{aggregates} of elemental feature values $g(x,Z)$ and the messages only bring all the information as a set to the central node, where the summarization function $f(x)$ computes the final value directly from the whole information. The messages span the $H_k(i)$ subgraph and produce a vector of elemental $g(x,Z)$ values. The summarization function is applied then to this whole vector. To compute average degrees, one first aggregates the elemental degrees of each node in messages producing features of $H_k(i)$ and then in the $f(x)$ function a simple average is taken. This method is not local, iterative and doesn't take the structure of the $H_k(i)$ into account. This kind of modeling works best for summarization functions for sets of feature values.
+
+
+\section{Atom Features}
+
+There's a long tradition of labeling atoms in chemical community based on their chemical contexts or functional groups. These include various rings, hydroxyl and nitrogen groups, etc. We focus on features which are not predefined and are flexible.
+
+Atom features can be booleans, reals, sets, distributions. All features can be thought in the context of $k$-distance atom neighborhoods. $\eta$-context covers the whole graph. There are several types of features. Feature (e.g. degree) can be described as distribution, whether some specific feature value exists, the maximum or minimum distance to it, or whether this node is part of some feature. Features can concern single nodes or be defined via subgraphs.
+
+\begin{table}
+\begin{tabular}{l}
+Feature \\
+\hline
+$k$-context atom/bond/charge distribution \\
+$k$-context has terminal/double bond/bridge? \\
+$k$-context minimum distance to something \\
+$k$-context maximum distance to something \\
+$k$-context is part of ring/some group? \\
+$k$-context occurrences of subgraphs with $\alpha < \frac{|E|}{|V|} < \beta$ \\
+all mentioned features w.r.t. to different directions \\
+\end{tabular}
+\caption{Atom features proposed}
+\end{table}
+
+
+
+\subsection{Local features}
+
+
+Potential features:
+
+
+\begin{itemize}
+
+\item Shortest distance to a node.
+
+\begin{align}
+g(x) \in \mathbb{R}^n, g_i(x) &= \left\{ \begin{array}{rl}
+0, & \text{if } node(i) = x \\
+\infty, & \text{otherwise} \\
+\end{array} \right. \\
+m_{x \rightarrow y} &= \mathbf{1} + \min(g(x), M_{xy}) \\
+f(x) &= \min(g(x), M_{x}) \\
+\end{align}
+
+\item Is the atom part of a ring (\textsc{ring})? The definition of a 6-ring can be whether the ring atoms form a sequence $(x_1,x_2), \ldots, (x_6,x_1)$. This can be detected by send the distance of nodes and testing whether distance to itself is exactly $6$ at any iteration (actually only iteration number 6).
+
+\begin{align}
+g(x,Z) = Val_i &= \left\{ \begin{array}{rl}
+0, & \text{if } node(i) = x \\
+\infty, & \text{otherwise} \\
+\end{array} \right. \\
+m_{x \rightarrow y} &= 1 + \min(g(x), M_{xy}) \\
+f(x) &= \left\{ \begin{array}{rl}
+1, & \text{if any } m_{z \rightarrow x}[x] = 6 \\
+0, & \text{otherwise} \\
+\end{array} \right.
+\end{align}
+
+\item $k$-context occurrences of subgraphs with $\sigma < \frac{|E|}{|V|} < \delta$. For example, is there a subgraph with 5 edges and 4 nodes. Compute by sending as messages min distances, and taking as summary the 
+
+\item How many rings total
+
+\item Atom's $k$-context atom distribution (\textsc{$k$-context-atom}).
+
+\begin{align}
+Val_i &= \left\{ \begin{array}{rl}
+atom(i), & \text{if } node(i) = x \\
+\epsilon, & \text{otherwise} \\
+\end{array} \right. \\
+\oplus &\equiv \max
+\end{align}
+
+On iteration $d$ we get $d$-context distribution. We can generate a summarized value of the distribution by mapping the atom labels into primes.
+
+\begin{align}
+Val_i &= g(atom(x)) \\
+\oplus &\equiv \times \\
+g&: \mathcal{X} \mapsto \mathbb{P}
+\end{align}
+
+
+
+
+\item The connectivity distribution of the atom at $k$-context (\textsc{$k$-context-connectivity}).
+
+\begin{align}
+Val_i &= \{|n(i)|\} \\
+\oplus &\equiv \cup
+\end{align}
+
+The sum can be computed distance-wise as before. The connectivity sum can be interpreted as a product, especially by mapping the connectivity values into primes and taking the product of them due to the uniqueness of primal products.
+
+
+\begin{align}
+Val_i &= g(|n(x)|) \\
+\oplus &\equiv \times \\
+g&: \mathcal{X} \mapsto \mathbb{P}
+\end{align}
+
+\item Does the atom have a terminal atom in its $k$-context? What's the atom's $k$-context's distance to nearest terminal? To the farthest? (\textsc{is-terminal}). The feature can be produced by generating a set of terminal distances. We need $\min$-operator for this.
+
+The same principles hold for all other similar features like double bond, certain group, etc.
+
+\begin{align}
+Val_i &= \left\{ \begin{array}{rl}
+\{1\}, & \text{if } |n(x)| = 1 \\
+\emptyset, & \text{otherwise} \\
+\end{array} \right. \\
+\oplus &\equiv \times
+\end{align}
+
+
+
+
+\item Bond types
+\item Clustering coefficient (how clustered the neighbors of atom are, detects bridges connecting big structures)
+\item Nearest double bond
+\item Detection of non-symmetry by comparing the context information of each direction separately. In the break point (in atom mapping context) one direction should be different, others same. 
+\item The number of paths arriving into a node in context $k$.
+\end{itemize}
+
+
+We can compute the entropy of the features.
+
+We can model the connectivity of the neighborhood as a distribution of features or as a sum. The distance between nodes is a variable that grows by one and a minimum is taken. Average distance??
+
+
+\section{Graph descriptors}
+
+Graph descriptors are invariants of the graph or its nodes. They are naturally computed by spanning the $H_k(i)$ subgraphs.
+
+\begin{itemize}
+\item Wiener index is defined as the sum of all node pair distances
+
+\begin{equation}
+W(G) = \sum_{u,v \in V} d(u,v) = \frac{1}{2} \sum_{v \in V} d(v).
+\end{equation}
+
+Wiener index can be computed using as a feature vector the shortest distance to all nodes. Finally we sum all shortest distances.
+
+\item Exponential Wiener-index is
+
+\begin{equation}
+W_{\lambda}(G) = \sum_{(u,v) \in E(G)} d(u,v)^{\lambda}.
+\end{equation}
+
+We can compute as before, but apply exponent-function first to distance vectors.
+
+\item Szeged-index is the generalization of Wiener. It's defined
+
+\begin{equation}
+Sz(G) = \sum_{e \in E(G)} n_1(e) n_2(e),
+\end{equation}
+
+where $n_1$ and $n_2$ are the number of nodes, which are closer to both end points of edge $e$.
+
+This can be computed using shortest distances. In the end we sum over all edges, compute for each node which endpoint was closer and take the product of these.
+
+\item $\sigma$-index $\sigma(G)$ is the number of independent subsets of $G$, where independent subset doesn't contain any edges between its nodes.
+
+\item $c$-index $c(G)$ is the number of cliques, i.e. the number of complete subgraphs.
+
+Do chemical graphs ever have even 3-cliques? Is this just the number of nodes and edges?
+
+
+\item $Z$-index $Z(G)$ is the number of independent edge subsets of $G$, where independent edge subset doesn't contain any shared nodes.
+
+\item Schultz-index $S(G)$ is the Wiener-index weighted with node degrees.
+
+\begin{equation}
+S(G) = \sum_{u,v \in V(G)} (\delta(u) + \delta(v)) d(u,v),
+\end{equation}
+
+where $\delta(v)$ is the degree of $v$.
+
+\item Modified Schultz-index $S^*(G)$
+
+\begin{equation}
+S^*(G) = \sum_{u,v \in V(G)} \delta(u) \delta(v) d(u,v),
+\end{equation}
+
+
+\end{itemize}
+
+
+
+
+
+
+\section{Machine Learning}
+
+??
+
+\section{WABI-paper}
+
+Writing a WABI paper about using message passing in atom mapping problem. Define the MP-algorithms and formulate how different features can be used for different tasks. Introduce a set of nice features. Transform the de Morgan into MP framework as a proof of concept. Extend Morgan's algorithm with some other features within the framework to show its strength and produce a better Morgan. Use atom features to show how atom maps and kernels are better with it.
+
+Draft plan:
+
+\begin{itemize}
+\item MP algorithms. Introduce the well known MP framework and generalize it to produce features. Introduce features.
+\item De Morgan as a specialization of MP. Links the framework into chemical domain.
+\item Introduce other context features and extend Morgan as a proof-of-method.
+\item Explain the usefulness of MP with various algorithms: A star, BPM, kernels.
+\end{itemize}
+
+
+\section{TODO}
+
+\begin{enumerate}
+\item Invent new features
+\item How does the $f$ function evolve during algorithms
+\item De Morgan in MP?
+\item Computing entropy?
+\end{enumerate}
+
+
+
+\end{document}

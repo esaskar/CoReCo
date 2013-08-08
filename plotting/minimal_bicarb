@@ -1,0 +1,125 @@
+# Bicarbonate
+Bicarbonate	Bicarbonate	C00288	100.0
+# THF with methyl group
+5-Methyltetrahydropteroyltri-L-glutamate	C04489	C04489	12000
+AnyGroup	AnyGroup	A00001	1000.0
+# 23.2.2012
+#FerricytochromeC FerricytochromeC C00125 10.0
+#FerrocytochromeC FerrocytochromeC C00126 10.0
+#Starch Starch C00369 1.0
+# Additions 12 Jul 2011
+Water	Water	C00001	1000.0
+#CO2	CO2	C00011	1000.0
+Diphosphate	Diphosphate	C00013	100.0
+Iron	Iron	C00023	100.0
+#H2O2	H2O2	C00027	100.0
+#Proton	Proton	C00080	100.0
+#Sulfur	Sulfur	C00087	100.0
+#HydrogenSulfide	HydrogenSulfide	C00283	100.0
+#Nitrite	Nitrite	C00088  100.0
+# Snitkin 2008:
+#Oxygen
+Oxygen	Oxygen	C00007	6.3
+#Oxygen	Oxygen	C00007	0
+#NH3
+NH3	NH3	C00014	100
+#SLF
+SLF Sulfate C00059	100
+#PI
+PI	Phosphate	C00009	0.89
+#Glucose
+Glucose	D-Glucose	C00031	22.6
+#Glycerol
+Glycerol	Glycerol	C00116	0
+#Lactate
+Lactate	D-Lactate	C00256	0
+#Galactose
+Galactose	D-Galactose	C00124	0
+#Raffinose
+Raffinose	Raffinose	C00492	0
+#Ethanol
+Ethanol	Ethanol	C00469	0
+#Acetate
+Acetate	Acetate	C00033	0
+#Ergosterol
+Ergosterol	Ergosterol	C01694	0
+#Zymosterol
+Zymosterol	Zymosterol	C05437	0
+#palmitoleate
+palmitoleate	Palmitate	C00249	0
+#stearate
+stearate	Stearate	C01530	0
+#oleate
+oleate	Oleate	C00712	0
+#linoleate
+linoleate	Linoleate	C01595	0
+#Potassium
+Potassium	Potassium	C00238	4.44
+#Sodium
+Sodium	Sodium	C01330	0.75
+#Biotin
+Biotin	Biotin	C00120	0.00000142
+#Choline
+Choline	Choline	C00114	0.000092
+#Riboflavin
+Riboflavin	Riboflavin	C00255	0
+#Thiamine
+Thiamine	Thiamine	C00378	0
+#Inositol
+Inositol	Inositol	C00137	0.00193
+#Thymidine
+Thymidine	Thymidine	C00214	0
+#Nicotinate
+Nicotinate	Nicotinate	C00253	0
+#4-Aminobenzoate
+4-Aminobenzoate	4-Aminobenzoate	C00568	0
+#(R)-Pantothenate
+(R)-Pantothenate	(R)-Pantothenate	C00864	0.0002
+#Pyridoxine
+Pyridoxine	Pyridoxine	C00314	0
+#Uracile
+Uracile	Uracil	C00106	0.4
+#Adenine
+Adenine	Adenine	C00147	0
+#Antimycin A
+AntimycinA	Antimycin	C11339	1000
+#Alanine
+Alanine	L-Alanine	C00041	0
+#Arginine
+Arginine	L-Arginine	C00062	0
+#Asparagine
+Asparagine	L-Asparagine	C00152	0
+#Aspartate
+Aspartate	L-Aspartate	C00049	0
+#Cysteine
+Cysteine	L-Cysteine	C00097	0
+#Glutamate
+Glutamate	L-Glutamate	C00025	0
+#Glutamine
+Glutamine	L-Glutamine	C00064	0
+#Glycine
+Glycine	Glycine	C00037	0
+#Histidine
+Histidine	L-Histidine	C00135	0
+#Isoleucine
+Isoleucine	L-Isoleucine	C00407	0
+#Leucine
+Leucine	L-Leucine	C00123	0
+#Lysine
+Lysine	L-lysine	C00047	0
+#Methionine
+Methionine	L-Methionine	C00073	0
+#Phenylalanine
+Phenylalanine	L-Phenylalanine	C00079	0
+#Proline
+Proline	L-Proline	C00148	0
+#Serile
+Serine	Serine	C00065	0
+#Threonine
+Threonine	L-Threonine	C00188	0
+#Tryptophan
+Tryptophan	L-Tryptophan	C00078	0
+#Tyrosine
+Tyrosine	L-Tyrosine	C00082	0
+#Valine
+Valine	L-Valine	C00183	0

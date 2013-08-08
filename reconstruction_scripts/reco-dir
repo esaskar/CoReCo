@@ -1,0 +1,99 @@
+#!/bin/bash
+# 
+# $1  data dir 
+# $2  param-accept
+# $3  param-reject
+# $4  species
+# $5  label-outputdir-with-params
+#  Model 0.02 2 Ppas
+
+if [ -z "$1" ]; then
+   echo "Specify data dir";
+   exit;
+fi
+
+if [ -z "$2" ]; then
+   echo "Specify accept threshold";
+   exit;
+fi
+
+if [ -z "$3" ]; then
+   echo "Specify reject threshold";
+   exit;
+fi
+
+if [ -z "$4" ]; then
+   echo "Specify species";
+   exit;
+fi
+
+
+if [ -z "$5" ]; then
+   echo "Specify Reconstruction Scripts Dir";
+   exit;
+fi
+
+
+if [ -z "$6" ]; then
+   echo "Specify Kegg Dir";
+   exit;
+fi
+
+if [ -z "$7" ]; then
+   echo "Specify taxonomy file";
+   exit;
+fi
+
+
+#This need to be specified to your working dir
+CDIR=$5
+
+
+Kegg=$6
+KDIR=$Kegg/kegg-no-general
+
+EQN=$KDIR/nooxygen.eqn
+
+DDIR=$1/reco/$4
+
+
+mkdir -p $DDIR
+
+if [[ -z "$8" ]]; then
+    ODIR_PARAM_LABELED=no;
+else
+    ODIR_PARAM_LABELED=yes;
+fi
+
+#REMOVE_PARTIAL_EC=no
+REMOVE_PARTIAL_EC=yes    # remove partial EC numbers from reaction scores
+
+echo "Reconstructing $4 in $1 (accept $2, reject $3)"
+$CDIR/reco-dir.py $Kegg $KDIR $1 $2 $3 $4 $ODIR_PARAM_LABELED $REMOVE_PARTIAL_EC >$DDIR/$4-$2-$3-out 2>$DDIR/$4-$2-$3-err
+
+$CDIR/reco-dir.py $Kegg $KDIR $1 $2 $3 $4 $ODIR_PARAM_LABELED $REMOVE_PARTIAL_EC
+
+[ $? -ne 0 ] && echo reco-dir.py failed && exit $?
+
+# Convert result into stoichiometric matrix
+echo "Generating stoichiometric matrix..."
+$CDIR/network2matrix.py $DDIR $EQN $Kegg/aux/kegg-compounds $DDIR/network
+[ $? -ne 0 ] && echo network2matrix.py failed && exit $?
+
+# Convert result into SBML
+echo Generating SBML...
+taxon=`grep $4 $7|cut -d " " -f 1`
+echo $4: taxonomy id $taxon
+$CDIR/network2sbml.py $DDIR $EQN $Kegg/aux/kegg-compounds $taxon $DDIR/$4_$taxon $4_CoReCo $4 $DDIR/$4.sbml
+[ $? -ne 0 ] && echo network2sbml.py failed && exit $?
+
+# Convert result into EC list
+echo Generating EC list...
+$CDIR/network2eclist.py $DDIR $DDIR/network.ecs
+[ $? -ne 0 ] && echo network2eclist.py failed && exit $?
+
+# Convert result into EC graph
+echo Generating EC graph...
+$CDIR/network2ecgraph.py $DDIR
+[ $? -ne 0 ] && echo network2ecgraph.py failed && exit $?
+

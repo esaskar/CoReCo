@@ -1,0 +1,8 @@
+d2=as.matrix(read.table("materials/chemical-production/20111212.yields.matrix2", header=TRUE))
+#pdf("materials/growth/20111212b.pdf")
+png("materials/chemical-production/20111212.yields.png",width=1024,height=1024)
+heatmap(d2,scale="none")
+dev.off()
+pdf("materials/chemical-production/20111212.yields.pdf")
+heatmap(d2,scale="none")
+dev.off()
