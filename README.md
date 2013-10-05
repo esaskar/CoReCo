@@ -21,3 +21,5 @@ CoReCo is a computational method for reconstructing metabolic networks of multip
 2. [EC to GO mapping (ec2go)](http://www.geneontology.org/external2go/ec2go/)
 3. [KEGG](http://www.kegg.jp/kegg/download/)
 4. GTG nrdb40
+
+See doc/CoReCoManual.pdf for installation and usage instructions.
