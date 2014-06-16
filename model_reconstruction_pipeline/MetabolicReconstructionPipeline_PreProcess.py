@@ -138,7 +138,8 @@ class MetabolicReconstructionPipeline_PreProcess:
             orgListFile_fh = open(self.orgListFile)
 
             for orgLine in orgListFile_fh:
-                
+                if orgLine.startswith("#"):
+                    continue
                 organismID, organismName = orgLine.strip().split()
                 
 		seqOrgListFile_fh = open(self.seq_org_list)

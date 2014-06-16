@@ -239,6 +239,8 @@ class MetabolicReconstructionPipeline_Blast:
             orgListFile_fh = open(self.orgListFile)
 
             for line in orgListFile_fh:
+                if line.startswith("#"):
+                    continue
                 
                 organismNameID, organismName = line.strip().split()
                 

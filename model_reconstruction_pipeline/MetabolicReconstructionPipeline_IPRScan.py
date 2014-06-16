@@ -344,7 +344,8 @@ class MetabolicReconstructionPipeline_IPRScan:
             orgListFile_fh = open(self.orgListFile)
 
             for line in orgListFile_fh:
-                
+                if line.startswith("#"):
+                    continue
                 organismNameID, organismName = line.strip().split()
                 
                 organism_IPR_final = NGS_Util.createFilePath(self.fungi_InterProScan_result, organismName + ".faa.IPR.final.txt")

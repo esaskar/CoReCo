@@ -10,24 +10,24 @@ import traceback
 sys.path.append("model_reconstruction_pipeline")
 import NGS_Util
 
-projectDir     = "/mnt/data/coreco/" # needs to be initialized
+projectDir = os.path.dirname(os.path.realpath(__file__))
 
 ##########################################################################################     Blast Toolkit      ##########################################################################################
 
-BlastDir     = "/mnt/nfs/Tools/ncbi-blast-2.2.28+/bin/"
-BlastDBDir   = "/mnt/nfs/Tools/ncbi-blast-2.2.28+/db/"   #Needs to be set the user#
-BlastDustDir = "/mnt/nfs/Tools/ncbi-blast-2.2.28+/db/"   #Needs to be set the user#
+BlastDir     = "Tools/ncbi-blast-2.2.28+/bin/"
+BlastDBDir   = "Tools/ncbi-blast-2.2.28+/db/"   #Needs to be set the user#
+BlastDustDir = "Tools/ncbi-blast-2.2.28+/db/"   #Needs to be set the user#
 
 ##########################################################################################     Blast Toolkit      ##########################################################################################
 
-IprscanDir   = "/mnt/nfs/Tools/iprscan/bin/"
+IprscanDir   = "Tools/iprscan/bin/"
 
 ###############################################################################################################################################################################################
 
 
-projectBinDir  = NGS_Util.createDirectoryPath(projectDir,"bin")
+#projectBinDir  = NGS_Util.createDirectoryPath(projectDir,"bin")
 
-BLASTScripts = NGS_Util.createDirectoryPath(projectBinDir,"Blast_scripts")
+BLASTScripts = NGS_Util.createDirectoryPath(projectDir,"Blast_scripts")
 BlastScripts_blast=BLASTScripts + "blast.bash"
 BlastScripts_blastp_bwdblast=BLASTScripts + "blastp_bwdblast.bash"
 BlastScripts_blastp_fwdblast=BLASTScripts + "blastp_fwdblast.bash"
@@ -39,7 +39,7 @@ BlastScripts_getEcs=BLASTScripts + "getEcs.py"
 BlastScripts_rectify_blastresult=BLASTScripts + "rectify_blastresult.py"
 
 
-GTGScripts = NGS_Util.createDirectoryPath(projectBinDir,"GTG_scripts")
+GTGScripts = NGS_Util.createDirectoryPath(projectDir,"GTG_scripts")
 GTGScripts_reform_knn= GTGScripts + "reform_knn.py"
 GTGScripts_reform= GTGScripts + "reform.py"
 GTGScripts_linebuffer= GTGScripts + "linebuffer.py"
@@ -52,7 +52,7 @@ GTGScripts_extract_combine_seq_start_len_fmt11= GTGScripts + "extract_combine_se
 GTGScripts_extract_best_hit= GTGScripts + "extract_best_hit.py"
 GTGScripts_buildGTGindex= GTGScripts + "buildGTGindex.py"
 
-IPRScanScripts = NGS_Util.createDirectoryPath(projectBinDir,"Iprscan_scripts")
+IPRScanScripts = NGS_Util.createDirectoryPath(projectDir,"Iprscan_scripts")
 IPRScanScripts_wsbatch_original_Dispatcher_test = IPRScanScripts + "wsbatch_original_Dispatcher_test.sh"
 IPRScanScripts_iprscan_suds = IPRScanScripts + "iprscan_suds.py"
 IPRScanScripts_ipr2go = IPRScanScripts + "ipr2go.py"
@@ -64,7 +64,7 @@ IPRScanScripts_fsplit = IPRScanScripts + "fsplit.sh"
 IPRScanScripts_combineIPRwithECs = IPRScanScripts + "combineIPRwithECs.py"
 IPRScanScripts_combine_xml_out = IPRScanScripts + "combine_xml_out.bash"
 
-ModelTrainingScripts = NGS_Util.createDirectoryPath(projectBinDir,"model_training_scripts")
+ModelTrainingScripts = NGS_Util.createDirectoryPath(projectDir,"model_training_scripts")
 ModelTrainingScripts_visualize_ec_scores = ModelTrainingScripts  + "visualize_ec_scores.py"
 ModelTrainingScripts_tree = ModelTrainingScripts  + "tree.py"
 ModelTrainingScripts_run_job = ModelTrainingScripts  + "run_job.sh"
@@ -88,10 +88,10 @@ ModelTrainingScripts_combined_density = ModelTrainingScripts  + "combined_densit
 ModelTrainingScripts_bayesnet = ModelTrainingScripts  + "bayesnet.py"
 
 
-ReconstructionScripts = NGS_Util.createDirectoryPath(projectBinDir,"reconstruction_scripts")
+ReconstructionScripts = NGS_Util.createDirectoryPath(projectDir,"reconstruction_scripts")
 ReconstructionScripts_reco_dir =  ReconstructionScripts + "reco-dir"
 
-keggParsingScripts =  NGS_Util.createDirectoryPath(projectBinDir,"kegg-parsing")
+keggParsingScripts =  NGS_Util.createDirectoryPath(projectDir,"kegg-parsing")
 keggParsingScripts_build_kegg_no_general = keggParsingScripts + "build_kegg_no_general.sh"
 
 

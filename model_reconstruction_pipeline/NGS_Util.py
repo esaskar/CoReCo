@@ -66,7 +66,7 @@ def createDirectory(dirPath):
             
             if not os.path.exists(dirPath):
                             
-                os.mkdir(dirPath)
+                os.makedirs(dirPath)
                 
             return dirPath
         

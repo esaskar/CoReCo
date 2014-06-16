@@ -3,7 +3,6 @@
 Author: M. Fahad Syed (fahad.syed@vtt.fi)
 """
 
-
 import os
 import sys
 import traceback
@@ -13,7 +12,6 @@ sys.path.append("..")
 import ScriptsDir
 
 sys.path.append(ScriptsDir.ReconstructionScripts)
-
 
 class MetabolicReconstructionPipeline_NetworkReconstruction:
 
@@ -25,51 +23,32 @@ class MetabolicReconstructionPipeline_NetworkReconstruction:
     networkReconstructionOrgList = ""
    
     def initialize(self, modelTrainingModelDir, intAaccept, intReject, keggDataDir, taxonomy, networkReconstructionOrgList):
-    
-        try:
-        
-            self.modelTrainingModelDir        = modelTrainingModelDir
-            self.keggDataDir                  = keggDataDir
-            self.taxonomy                     = taxonomy
-            self.intAaccept                   = intAaccept
-            self.intReject                    = intReject
-            self.networkReconstructionOrgList = networkReconstructionOrgList
-
-    
-        except Exception:
-            print traceback.print_exc()
-
+        self.modelTrainingModelDir        = modelTrainingModelDir
+        self.keggDataDir                  = keggDataDir
+        self.taxonomy                     = taxonomy
+        self.intAaccept                   = intAaccept
+        self.intReject                    = intReject
+        self.networkReconstructionOrgList = networkReconstructionOrgList
        
     def doNetworkReconstruction(self):
-    
-        try:
+        print "doNetworkReconstruction"
 
-            print "doNetworkReconstruction"
+        curDirectory = os.getcwd()
+        os.chdir(ScriptsDir.ReconstructionScripts)
 
-	    curDirectory = os.getcwd()
-	    os.chdir(ScriptsDir.ReconstructionScripts)
-        
-            orgListFile_fh = open(self.networkReconstructionOrgList)
+        orgListFile_fh = open(self.networkReconstructionOrgList)
+        for orgLine in orgListFile_fh:
 
-            for orgLine in orgListFile_fh:
-                
-                organismID = orgLine.strip()
-		
-		print "Network reconstruction for: " + organismID
+            organismID = orgLine.strip()
+            if organismID.startswith("#"):
+                continue
 
-		call = "bash " +  ScriptsDir.ReconstructionScripts_reco_dir + " " + self.modelTrainingModelDir + " " + str(self.intAaccept) + " " + str(self.intReject) + " " + organismID  + " " + ScriptsDir.ReconstructionScripts +  " " +  self.keggDataDir  + " " + self.taxonomy  
-		
-		NGS_Util.executeCall(call)
+            print "Network reconstruction for: " + organismID
 
-            orgListFile_fh.close() 
-     
+            call = "bash " +  ScriptsDir.ReconstructionScripts_reco_dir + " " + self.modelTrainingModelDir + " " + str(self.intAaccept) + " " + str(self.intReject) + " " + organismID  + " " + ScriptsDir.ReconstructionScripts +  " " +  self.keggDataDir  + " " + self.taxonomy  
 
-	    os.chdir(curDirectory)
+            NGS_Util.executeCall(call)
 
-        except Exception:
-            
-            print traceback.print_exc()
-            
+        orgListFile_fh.close() 
+        os.chdir(curDirectory)
         return ""
-    
-

@@ -325,7 +325,8 @@ class MetabolicReconstructionPipeline_GTG:
             orgListFile_fh = open(self.orgListFile)
 
             for line in orgListFile_fh:
-                
+                if line.startswith("#"):
+                    continue
                 organismNameID, organismName = line.strip().split()
                 
                 org_gtg_knn_final = NGS_Util.createFilePath(self.GTGKNNDir, organismNameID + ".gtg.knn")
