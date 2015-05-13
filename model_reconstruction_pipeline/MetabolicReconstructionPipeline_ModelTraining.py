@@ -42,212 +42,122 @@ class MetabolicReconstructionPipeline_ModelTraining:
 
 
     def initialize(self, seq_org_list, jointBlastDir, GTGFungiKNNDir, fungi_InterProScan_result, phylogeneticTreeFile, modelTrainingDir):
-    
-        try:
-        
-	    self.seq_org_list                            = seq_org_list
+        self.seq_org_list                            = seq_org_list
 
-	    self.jointBlastDir                           = jointBlastDir
-	    self.GTGFungiKNNDir                          = GTGFungiKNNDir
-	    self.fungi_InterProScan_result               = fungi_InterProScan_result	    
+        self.jointBlastDir                           = jointBlastDir
+        self.GTGFungiKNNDir                          = GTGFungiKNNDir
+        self.fungi_InterProScan_result               = fungi_InterProScan_result	    
 
-	    self.phylogeneticTreeFile                    = phylogeneticTreeFile
-	    
-	    self.modelTrainingDir                        = modelTrainingDir
-	    self.modelTraining_IPR_EC_Dir                = NGS_Util.createDirectoryPath(self.modelTrainingDir, "IPR_EC")
-	    self.modelTrainingBlastPVDir                 = NGS_Util.createDirectoryPath(self.modelTrainingDir, "BlastPValues")
-	    self.modelTraining_EC_Scores_Dir             = NGS_Util.createDirectoryPath(self.modelTrainingDir, "ECScores")    
-	    self.modelTrainingProbabilityDensityScoreDir = NGS_Util.createDirectoryPath(self.modelTrainingDir, "ProbabilityDensityScore")	    
-	    self.modelTrainingTreeDir                    = NGS_Util.createDirectoryPath(self.modelTrainingDir, "Tree")	    
-	    self.modelTrainingModelDir                   = NGS_Util.createDirectoryPath(self.modelTrainingDir, "Model")
+        self.phylogeneticTreeFile                    = phylogeneticTreeFile
+
+        self.modelTrainingDir                        = modelTrainingDir
+        self.modelTraining_IPR_EC_Dir                = NGS_Util.createDirectoryPath(self.modelTrainingDir, "IPR_EC")
+        self.modelTrainingBlastPVDir                 = NGS_Util.createDirectoryPath(self.modelTrainingDir, "BlastPValues")
+        self.modelTraining_EC_Scores_Dir             = NGS_Util.createDirectoryPath(self.modelTrainingDir, "ECScores")    
+        self.modelTrainingProbabilityDensityScoreDir = NGS_Util.createDirectoryPath(self.modelTrainingDir, "ProbabilityDensityScore")	    
+        self.modelTrainingTreeDir                    = NGS_Util.createDirectoryPath(self.modelTrainingDir, "Tree")	    
+        self.modelTrainingModelDir                   = NGS_Util.createDirectoryPath(self.modelTrainingDir, "Model")
 
 
-	    NGS_Util.createDirectory(self.modelTrainingDir)
-	    NGS_Util.createDirectory(self.modelTraining_IPR_EC_Dir)
-	    NGS_Util.createDirectory(self.modelTrainingBlastPVDir)
-	    NGS_Util.createDirectory(self.modelTraining_EC_Scores_Dir)
-	    NGS_Util.createDirectory(self.modelTrainingProbabilityDensityScoreDir)
-	    NGS_Util.createDirectory(self.modelTrainingTreeDir)
-	    NGS_Util.createDirectory(self.modelTrainingModelDir)
-	    
-	    
-	    if (os.path.exists(self.phylogeneticTreeFile)):
-		
-		NGS_Util.copyFile( self.phylogeneticTreeFile,NGS_Util.createFilePath(self.modelTrainingTreeDir,"tree")   )
-		self.phylogeneticTreeFile = NGS_Util.createFilePath(self.modelTrainingTreeDir,"tree")
+        NGS_Util.createDirectory(self.modelTrainingDir)
+        NGS_Util.createDirectory(self.modelTraining_IPR_EC_Dir)
+        NGS_Util.createDirectory(self.modelTrainingBlastPVDir)
+        NGS_Util.createDirectory(self.modelTraining_EC_Scores_Dir)
+        NGS_Util.createDirectory(self.modelTrainingProbabilityDensityScoreDir)
+        NGS_Util.createDirectory(self.modelTrainingTreeDir)
+        NGS_Util.createDirectory(self.modelTrainingModelDir)
 
 
-	    self.treeCPDS = NGS_Util.createFilePath(self.modelTrainingTreeDir,"tree.cpds")
-    
-        except Exception:
-            print traceback.print_exc()
-    
+        if (os.path.exists(self.phylogeneticTreeFile)):
+
+            NGS_Util.copyFile( self.phylogeneticTreeFile,NGS_Util.createFilePath(self.modelTrainingTreeDir,"tree")   )
+            self.phylogeneticTreeFile = NGS_Util.createFilePath(self.modelTrainingTreeDir,"tree")
+
+
+        self.treeCPDS = NGS_Util.createFilePath(self.modelTrainingTreeDir,"tree.cpds")
     
     def extract_IPR_EC_Values(self):
-       
-        try:
-        
-            print "extract_IPR_EC_Values" 
-	    
-	    call = "python " + ScriptsDir.ModelTrainingScripts_extract_ecs_from_iprscan + " " + self.fungi_InterProScan_result  + " " + self.modelTraining_IPR_EC_Dir
-	    
-	    NGS_Util.executeCall(call)
-	    
+        print "extract_IPR_EC_Values" 
 
-        except Exception:
-            
-            print traceback.print_exc()
-        
+        call = "python " + ScriptsDir.ModelTrainingScripts_extract_ecs_from_iprscan + " " + self.fungi_InterProScan_result  + " " + self.modelTraining_IPR_EC_Dir
+
+        NGS_Util.executeCall(call)
+
 
     def computeBlastPvalues(self):
-       
-        try:
-        
-            print "computeBlastPvalues"
+        print "computeBlastPvalues"
 
-	    call = "python " + ScriptsDir.ModelTrainingScripts_computeBlastPvalues + " " + self.jointBlastDir + " " + self.modelTrainingBlastPVDir
-	    
-	    NGS_Util.executeCall(call)
-	    
+        call = "python " + ScriptsDir.ModelTrainingScripts_computeBlastPvalues + " " + self.jointBlastDir + " " + self.modelTrainingBlastPVDir
 
-        except Exception:
-            
-            print traceback.print_exc()
-        
-
+        NGS_Util.executeCall(call)
 
     def computeMergedScores(self):
-       
-        try:
-        
-            print "computeMergedScores"
+        print "computeMergedScores"
 
-	    call = "python " + ScriptsDir.ModelTrainingScripts_computeMergedScores + " " + self.seq_org_list + " " + self.modelTrainingBlastPVDir + " " + self.GTGFungiKNNDir  + " " + self.modelTraining_EC_Scores_Dir 
-
-	    
-	    NGS_Util.executeCall(call)
-	    
-        except Exception:
-            
-            print traceback.print_exc()
-       
+        call = "python " + ScriptsDir.ModelTrainingScripts_computeMergedScores + " " + self.seq_org_list + " " + self.modelTrainingBlastPVDir + " " + self.GTGFungiKNNDir  + " " + self.modelTraining_EC_Scores_Dir 
+        NGS_Util.executeCall(call)
 
     def computeECscores(self):
-       
-        try:
-        
-            print "computeECscores"
+        print "computeECscores"
 
-	    call = "python " + ScriptsDir.ModelTrainingScripts_computeECscores + " " + self.modelTraining_EC_Scores_Dir 
-	    
-	    NGS_Util.executeCall(call)
-	    
-        except Exception:
-            
-            print traceback.print_exc()
+        call = "python " + ScriptsDir.ModelTrainingScripts_computeECscores + " " + self.modelTraining_EC_Scores_Dir 
 
-
+        NGS_Util.executeCall(call)
 
     def computeProbabilityDensityScores(self):
-       
-        try:
-        
-            print "computeProbabilityDensityScores"
+        print "computeProbabilityDensityScores"
 
-	    call = "python " + ScriptsDir.ModelTrainingScripts_estimate_cpds_wrapper + " " + self.seq_org_list + " " + self.modelTraining_EC_Scores_Dir  + " " + self.modelTraining_IPR_EC_Dir  + " " + self.modelTrainingProbabilityDensityScoreDir
-	    
-	    NGS_Util.executeCall(call)
-	    
-        except Exception:
-            
-            print traceback.print_exc()
+        call = "python " + ScriptsDir.ModelTrainingScripts_estimate_cpds_wrapper + " " + self.seq_org_list + " " + self.modelTraining_EC_Scores_Dir  + " " + self.modelTraining_IPR_EC_Dir  + " " + self.modelTrainingProbabilityDensityScoreDir
 
-
+        NGS_Util.executeCall(call)
 
     def combineProbabilityDensityScores(self):
-       
-        try:
-        
-            print "combineProbabilityDensityScores"
+        print "combineProbabilityDensityScores"
 
-	    call = "python " + ScriptsDir.ModelTrainingScripts_combined_density + " " + self.modelTrainingProbabilityDensityScoreDir
-	    
-	    NGS_Util.executeCall(call)
-	    
-        except Exception:
-            
-            print traceback.print_exc()
+        call = "python " + ScriptsDir.ModelTrainingScripts_combined_density + " " + self.modelTrainingProbabilityDensityScoreDir
 
+        NGS_Util.executeCall(call)
 
 	    
     def computeTreeProbabilityDensityScore(self):
-       
-        try:
-        
-            print "computeTreeProbabilityDensityScore"
+        print "computeTreeProbabilityDensityScore"
 
-	    call = "python " + ScriptsDir.ModelTrainingScripts_estimate_mutation_probability + " " + self.modelTraining_IPR_EC_Dir  + " " + self.phylogeneticTreeFile   + " " +  self.modelTrainingTreeDir
-	    NGS_Util.executeCall(call)
+        call = "python " + ScriptsDir.ModelTrainingScripts_estimate_mutation_probability + " " + self.modelTraining_IPR_EC_Dir  + " " + self.phylogeneticTreeFile   + " " +  self.modelTrainingTreeDir
+        NGS_Util.executeCall(call)
 
-	    self.treeCPDS = NGS_Util.createFilePath(self.modelTrainingTreeDir,"tree.cpds")
-
-        except Exception:
-            
-            print traceback.print_exc()
-
+        self.treeCPDS = NGS_Util.createFilePath(self.modelTrainingTreeDir,"tree.cpds")
 
     def runBashScript(self):
-       
-        try:
-        
-            print "runBashScript"
+        print "runBashScript"
+        call = "bash " + ScriptsDir.ModelTrainingScripts_run_job + " " + self.modelTrainingDir  + " " + self.modelTrainingModelDir  + " " + self.modelTraining_EC_Scores_Dir   + " " + self.modelTrainingProbabilityDensityScoreDir+"all" + " " + self.seq_org_list +  " " + self.phylogeneticTreeFile + " " + self.modelTraining_IPR_EC_Dir  + " " + self.treeCPDS
 
-
-	    call = "bash " + ScriptsDir.ModelTrainingScripts_run_job + " " + self.modelTrainingDir  + " " + self.modelTrainingModelDir  + " " + self.modelTraining_EC_Scores_Dir   + " " + self.modelTrainingProbabilityDensityScoreDir+"all" + " " + self.seq_org_list +  " " + self.phylogeneticTreeFile + " " + self.modelTraining_IPR_EC_Dir  + " " + self.treeCPDS
-	    
-	    NGS_Util.executeCall(call)
-
-    
-        except Exception:
-            
-            print traceback.print_exc()
-
-
+        NGS_Util.executeCall(call)
 
     def runModelTrainingAlgo(self):
-       
-        try:
-        
-            print "runModelTrainingAlgo"
+        print "runModelTrainingAlgo"
 
-	    curDirectory = os.getcwd()
+        curDirectory = os.getcwd()
 
-	    os.chdir(ScriptsDir.ModelTrainingScripts)
+        os.chdir(ScriptsDir.ModelTrainingScripts)
 
-	    self.extract_IPR_EC_Values()
-	    
-	    self.computeBlastPvalues()    
-	    
-	    self.computeMergedScores()
+        self.extract_IPR_EC_Values()
 
-	    self.computeECscores()
-	    
-	    self.computeProbabilityDensityScores()	
+        self.computeBlastPvalues()    
 
-	    self.combineProbabilityDensityScores()
+        self.computeMergedScores()
 
-	    self.computeTreeProbabilityDensityScore()
+        self.computeECscores()
 
-	    self.runBashScript()
+        self.computeProbabilityDensityScores()	
 
-	    NGS_Util.executeCall("rm *.Rout")
-	    NGS_Util.executeCall("rm *.RData")
-	    
-	    os.chdir(curDirectory)
+        self.combineProbabilityDensityScores()
 
-        except Exception:
-            
-            print traceback.print_exc()
+        self.computeTreeProbabilityDensityScore()
 
+        self.runBashScript()
 
+        NGS_Util.executeCall("rm *.Rout")
+        NGS_Util.executeCall("rm *.RData")
+
+        os.chdir(curDirectory)
 

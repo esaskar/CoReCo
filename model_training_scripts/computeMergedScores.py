@@ -26,9 +26,13 @@ longtoshort = {}
 #Tree Trichoderma_reesei
 #Pgra Puccinia_graminis
 for s in f:
+    if s.startswith("#"):
+        continue
     shortn, longn = s.strip().split(" ")
-
     longtoshort[longn] = shortn
+
+if len(longtoshort) == 0:
+    sys.stderr.write("Warning: no organisms in %s\n" % (sys.argv[1]))
 
 # save all of the -join.blast file as a list from blastdir in fns
 fns = os.listdir(blastdir)

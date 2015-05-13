@@ -5,9 +5,12 @@ echo "Building a version of KEGG with no general reactions"
 RUNDIR=`pwd`
 echo "Running the script from directory $RUNDIR"
 
-DIR=$RUNDIR/../../data/Kegg/kegg-no-general 
-KDIR=$RUNDIR/../../data/Kegg #original files from KEGG
-ADIR=$RUNDIR/../../data/Kegg/aux 
+SCRIPT=$(readlink -f $0)
+SDIR=$(dirname $SCRIPT)
+
+DIR=$RUNDIR/data/kegg/kegg-no-general 
+KDIR=$RUNDIR/data/kegg #original files from KEGG
+ADIR=$RUNDIR/data/kegg/aux 
 MOLDIR=$KDIR/mol/ 
 
 echo "Source: $KDIR"
@@ -16,14 +19,13 @@ echo "Target: $DIR"
 mkdir -p $DIR
 mkdir -p $ADIR
 
-
 echo ""
 if [ -e $DIR/reaction ]; then
     echo "Already created files enzyme, reaction, compound, and general-reactions to"
     echo "folder $DIR"
 else
     echo "Filtering KEGG enzymes and reactions..."
-    python filter_general_kegg_reactions.py $KDIR $DIR
+    python $SDIR/filter_general_kegg_reactions.py $KDIR $DIR
     if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 fi
     
@@ -33,7 +35,7 @@ if [ -e $DIR/ec-list.txt ]; then
     echo "folder $DIR"
 else
     echo "Building EC to reaction map..."
-    python extract-kegg-ecs-orthology.py $DIR/reaction $DIR/ec-list.txt
+    python $SDIR/extract-kegg-ecs-orthology.py $DIR/reaction $DIR/ec-list.txt
     if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 fi    
 
@@ -43,7 +45,7 @@ if [ -e $ADIR/reaction-pathways ]; then
     echo "folder $ADIR"
 else
     echo "Extracting tmp1 pathway-names and tmp2 from KEGG"
-    python extract-kegg-pathways.py $KDIR $ADIR/ec-to-pathways $ADIR/pathway-names $ADIR/reaction-pathways
+    python $SDIR/extract-kegg-pathways.py $KDIR $ADIR/ec-to-pathways $ADIR/pathway-names $ADIR/reaction-pathways
     if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 fi    
 
@@ -53,7 +55,7 @@ if [ -e $ADIR/kegg-compounds ]; then
     echo "folder $ADIR"
 else
     echo "Extracting KEGG compound names..."
-    python parse_compound_names.py $DIR/compound $ADIR/kegg-compounds
+    python $SDIR/parse_compound_names.py $DIR/compound $ADIR/kegg-compounds
     if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 fi    
 
@@ -64,7 +66,7 @@ if [ -e $ADIR/kegg-metabolite-formulae ]; then
     echo "folder $ADIR"
 else
     echo "Filtering kegg-metabolite-formulae..."
-    python parse_kegg_compound_formulae.py $MOLDIR $ADIR/kegg-metabolite-formulae
+    python $SDIR/parse_kegg_compound_formulae.py $MOLDIR $ADIR/kegg-metabolite-formulae
     if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 fi
 
@@ -87,8 +89,9 @@ if [ -e $DIR/nooxygen.eqn ]; then
     echo "folder $DIR"
 else
     echo "Balancing KEGG reactions..."
-    python check_element_balances.py -k $DIR -o $DIR/nooxygen 2>/dev/null
-    if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
+    echo python $SDIR/check_element_balances.py -k $DIR -o $DIR/nooxygen
+    python $SDIR/check_element_balances.py -k $DIR -o $DIR/nooxygen 
+    if [ $? -ne 0 ]; then echo "Failed."; exit 1; fi
 fi    
 
 echo ""
@@ -97,7 +100,7 @@ if [ -e $DIR/nooxygen.mapperinput ]; then
     echo "folder $DIR"
 else
     echo "Converting stoichiometry to atom mapper input format..."
-    python convert_balances_to_mapper.py $DIR/nooxygen.eqn $DIR/nooxygen.mapperinput
+    python $SDIR/convert_balances_to_mapper.py $DIR/nooxygen.eqn $DIR/nooxygen.mapperinput
     if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 fi
 

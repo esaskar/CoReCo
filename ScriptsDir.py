@@ -14,9 +14,9 @@ projectDir = os.path.dirname(os.path.realpath(__file__))
 
 ##########################################################################################     Blast Toolkit      ##########################################################################################
 
-BlastDir     = "Tools/ncbi-blast-2.2.28+/bin/"
-BlastDBDir   = "Tools/ncbi-blast-2.2.28+/db/"   #Needs to be set the user#
-BlastDustDir = "Tools/ncbi-blast-2.2.28+/db/"   #Needs to be set the user#
+BlastDir     = "Tools/ncbi-blast-2.2.30+/bin/"
+BlastDBDir   = "Tools/ncbi-blast-2.2.30+/db/"   #Needs to be set the user#
+BlastDustDir = "Tools/ncbi-blast-2.2.30+/db/"   #Needs to be set the user#
 
 ##########################################################################################     Blast Toolkit      ##########################################################################################
 

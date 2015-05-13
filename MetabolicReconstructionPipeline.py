@@ -76,45 +76,29 @@ networkReconstructionOrgList = ProjectDir.networkReconstructionOrgList
 keggAtomMapsDataDir = ProjectDir.keggAtomMapsDataDir
 
 
-try:
-    
-    preProcess = MetabolicReconstructionPipeline_PreProcess.MetabolicReconstructionPipeline_PreProcess()
-    preProcess.initialize(uniprot_fasta, uniprot_dust, uniprot_blast_db,  nrdb40_fasta, nrdb40_dust, nrdb40_blast_db, orgListFile, orgFastaDir, seq_org_list, orgBlastDBDir, orgBlastDustDir, ec_files, uniprot_sprot_dat, keggAtomMapsDataDir )
-    preProcess.preProcess()
+preProcess = MetabolicReconstructionPipeline_PreProcess.MetabolicReconstructionPipeline_PreProcess()
+preProcess.initialize(uniprot_fasta, uniprot_dust, uniprot_blast_db,  nrdb40_fasta, nrdb40_dust, nrdb40_blast_db, orgListFile, orgFastaDir, seq_org_list, orgBlastDBDir, orgBlastDustDir, ec_files, uniprot_sprot_dat, keggAtomMapsDataDir )
+preProcess.preProcess()
 
+blast = MetabolicReconstructionPipeline_Blast.MetabolicReconstructionPipeline_Blast()
+blast.initialize(uniprot_fasta, ec_files, uniprot_sprot_dat, uniprot_dust, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir)
+blast.getBlastScore()
 
-    blast = MetabolicReconstructionPipeline_Blast.MetabolicReconstructionPipeline_Blast()
-    blast.initialize(uniprot_fasta, ec_files, uniprot_sprot_dat, uniprot_dust, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir)
-    blast.getBlastScore()
+gtg = MetabolicReconstructionPipeline_GTG.MetabolicReconstructionPipeline_GTG()
+gtg.initialize(nrdb40_fasta, nrdb40_dust, nrdb40_blast_db, ec_files, orgListFile, orgFastaDir,  orgBlastDBDir, orgBlastDustDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, CAA1Dir, nids_up, seq_org_list, numberNearestHits, orgGTGDatabaseDir)
+gtg.getGTGScore()
 
+iprscan = MetabolicReconstructionPipeline_IPRScan.MetabolicReconstructionPipeline_IPRScan()
+iprscan.initialize(orgListFile, orgFastaDir,  orgIPRScanDir, InterProScan_EC_RAW_results, ec2go, seq_org_list)
+iprscan.getIPRScanScore()
 
-    gtg = MetabolicReconstructionPipeline_GTG.MetabolicReconstructionPipeline_GTG()
-    gtg.initialize(nrdb40_fasta, nrdb40_dust, nrdb40_blast_db, ec_files, orgListFile, orgFastaDir,  orgBlastDBDir, orgBlastDustDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, CAA1Dir, nids_up, seq_org_list, numberNearestHits, orgGTGDatabaseDir)
-    gtg.getGTGScore()
-    
+modelTraining = MetabolicReconstructionPipeline_ModelTraining.MetabolicReconstructionPipeline_ModelTraining()
+modelTraining.initialize(orgListFile, jointBlastDir, GTGKNNDir, InterProScan_EC_RAW_results, phylogeneticTreeFile, modelTrainingDir)
+modelTraining.runModelTrainingAlgo()
 
-
-    iprscan = MetabolicReconstructionPipeline_IPRScan.MetabolicReconstructionPipeline_IPRScan()
-    iprscan.initialize(orgListFile, orgFastaDir,  orgIPRScanDir, InterProScan_EC_RAW_results, ec2go, seq_org_list)
-    iprscan.getIPRScanScore()
-    
-    
-
-    modelTraining = MetabolicReconstructionPipeline_ModelTraining.MetabolicReconstructionPipeline_ModelTraining()
-    modelTraining.initialize(orgListFile, jointBlastDir, GTGKNNDir, InterProScan_EC_RAW_results, phylogeneticTreeFile, modelTrainingDir)
-    modelTraining.runModelTrainingAlgo()
-
-
-
-    networkReconstruction = MetabolicReconstructionPipeline_NetworkReconstruction.MetabolicReconstructionPipeline_NetworkReconstruction()
-    networkReconstruction.initialize( modelTrainingModelDir, intAaccept, intReject, keggDataDir, taxonomy, networkReconstructionOrgList)
-    networkReconstruction.doNetworkReconstruction()
-    
-    
-        
-except Exception:
-    
-    print traceback.print_exc()
+networkReconstruction = MetabolicReconstructionPipeline_NetworkReconstruction.MetabolicReconstructionPipeline_NetworkReconstruction()
+networkReconstruction.initialize( modelTrainingModelDir, intAaccept, intReject, keggDataDir, taxonomy, networkReconstructionOrgList)
+networkReconstruction.doNetworkReconstruction()
 
 
 

@@ -147,7 +147,6 @@ def reactants_to_atoms(reactants, mult, formulae, aux_mols, options):
 def glpkout(s):
     print "glpk: %s" % (s)
 
-
 def balance_reaction(eqn, formulae, options):
     lhs, rhs = eqn.split(" <=> ")
     lhs = lhs.split(" + ")
@@ -227,9 +226,8 @@ def balance_reaction(eqn, formulae, options):
     for u, v in N:
         M.append((v, u, N[(u, v)]))
     lp.matrix = M
-    
+
     glpk.env.term_on = False
-    #glpk.env.term_hook = glpkout
 
     # glpk integer solver requires us to solve linear problem first
     retval = lp.simplex()
@@ -424,13 +422,9 @@ def read_formulae(f):
 def add_dummy_formulae(formulae):
     #formulae["ANYMOL"] = {"*" : 1}
     pass
-        
-def main(options):
-    #formulae = read_compound(open("%s/compound" % (kdir)))
-    #formulae = read_formulae(open("aux/kegg-metabolite-formulae2"))
 
-    formulae = read_formulae(open("../../data/Kegg/aux/kegg-metabolite-formulae"))
-    #formulae = read_formulae(open("%s/aux/kegg-metabolite-formulae"%(options.kegg))
+def main(options):
+    formulae = read_formulae(open("%s/../aux/kegg-metabolite-formulae" % (options.kegg)))
 
     add_dummy_formulae(formulae)
     check_reactions(open("%s/reaction" % (options.kegg)), formulae, options)

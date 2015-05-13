@@ -22,170 +22,94 @@ errorLog     = "../ErrorLog.txt"
 
 
 def createFilePath(dirPath,fileName):
+    path = ""
 
-    try:
-        path = ""
-        
-        length = len(dirPath)
-        
-        if dirPath.find("/", length-1) == -1:
-            path = dirPath + "/" + fileName
-        else:
-            path = dirPath + fileName
-            
-        return path
-        
-    except Exception:
-        print traceback.print_exc()
-        return None
+    length = len(dirPath)
+
+    if dirPath.find("/", length-1) == -1:
+        path = dirPath + "/" + fileName
+    else:
+        path = dirPath + fileName
+
+    return path
 
 def createDirectoryPath(path,dirName):
+    dirPath = ""
 
-    try:
-        dirPath = ""
-        
-        length = len(path)
-        
-        if path.find("/", length-1) == -1:
-            dirPath = path + "/" + dirName + "/"
-        else:
-            dirPath = path + dirName + "/"
-            
-        return dirPath
-        
-    except Exception:
-        print traceback.print_exc()
-        return None
+    length = len(path)
 
+    if path.find("/", length-1) == -1:
+        dirPath = path + "/" + dirName + "/"
+    else:
+        dirPath = path + dirName + "/"
+
+    return dirPath
 
 def createDirectory(dirPath):
+    if (dirPath != None):
 
-    try:
-    
-        if (dirPath != None):
-            
-            if not os.path.exists(dirPath):
-                            
-                os.makedirs(dirPath)
-                
-            return dirPath
-        
-        return None
+        if not os.path.exists(dirPath):
 
-    except Exception:
-        print traceback.print_exc()
-        return None
+            os.makedirs(dirPath)
 
+        return dirPath
+
+    return None
 
 def logExecutionCall(call):
+    print call
 
-    try:
-        
-        print call
-    
-        fw = open(executionLog,"a")
-        
-        fw.write(call + "\n\n")
+    fw = open(executionLog,"a")
 
-        fw.close()
-        
-    except Exception:
-        print traceback.print_exc()
+    fw.write(call + "\n\n")
 
+    fw.close()
 
 def logCall(call):
+    fw = open(traceLog,"a")
 
-    try:
-   
-        fw = open(traceLog,"a")
-        
-        fw.write(call + "\n\n")
+    fw.write(call + "\n\n")
 
-        fw.close()
-        
-    except Exception:
-        print traceback.print_exc()
-
+    fw.close()
 
 def executeCall(call):
-    
-    try:
-                
-        print call + "\n\n"
-
-        executionLogFile = open(executionLog,"a")
-
-        errorLogFile = open(errorLog,"a")
-        
-        executionLogFile.write(call + "\n\n")
-
-        errorLogFile.write(call + "\n\n")
-        
-        subprocess.call(call, stdin=executionLogFile, stderr=errorLogFile, shell=True)
-        
-        errorLogFile.close()
-        
-        executionLogFile.close()
-    
-    except Exception:
-
-        print traceback.print_exc()
-
+    executionLogFile = open(executionLog,"a")
+    errorLogFile = open(errorLog,"a")
+    executionLogFile.write(call + "\n\n")
+    errorLogFile.write(call + "\n\n")
+    rc = subprocess.call(call, stdin=executionLogFile, stderr=errorLogFile, shell=True)
+    if rc > 0:
+        raise Exception("System call failed (%d): %s" % (rc, call))
 
 def moveDirectory(src,dest):
+    if ( os.path.exists(src) and os.path.exists(dest) ):
 
-    try:
-
-        if ( os.path.exists(src) and os.path.exists(dest) ):
-        
-            shutil.move(src, dest)
-                    
-    except Exception:
-        print traceback.print_exc()
-
+        shutil.move(src, dest)
 
 
 def zipDirectory(zdir):
+    if os.path.exists( zdir ):
 
-    try:
-        
-        if os.path.exists( zdir ):
-        
-            call = "gzip -r " + zdir
-        
-            executeCall(call)
-        
-    except Exception:
-        print traceback.print_exc()
+        call = "gzip -r " + zdir
 
+        executeCall(call)
 
 def unzipFileToDifferentLocation(zfile, uzFile):
+    if ( (os.path.exists(zfile)) and (not os.path.exists(uzFile)) ):
 
-    try:
-        if ( (os.path.exists(zfile)) and (not os.path.exists(uzFile)) ):
-            
-            call = "gzip -d -c " + zfile + " > " +  uzFile
-        
-            executeCall(call)
-        
-    except Exception:
-        print traceback.print_exc()
+        call = "gzip -d -c " + zfile + " > " +  uzFile
 
+        executeCall(call)
 
 def unzipFile(zfile):
-
-    try:
-        print zfile + "\n"
+    print zfile + "\n"
 
 
-        if os.path.exists(zfile):
+    if os.path.exists(zfile):
 
-            call = "gzip -d " + zfile
-        
-            executeCall(call)
-        
-    except Exception:
-        print traceback.print_exc()
+        call = "gzip -d " + zfile
+
+        executeCall(call)
 
 
 ####################################################################################################################################################################################################################################################################################################################################
@@ -194,160 +118,103 @@ def unzipFile(zfile):
    
     
 def unzipDirectory(zdir):
+    if os.path.exists( zdir ):
 
-    try:
-        
-        if os.path.exists( zdir ):
-        
-            call = "gzip -d " + zdir
-        
-            executeCall(call)
-        
-    except Exception:
-        print traceback.print_exc()
+        call = "gzip -d " + zdir
 
+        executeCall(call)
     
 def findMissingSampleLines(inFile, fromFile):
-    
-    try:
-        
-        fromFile = open(fromFile, "r")        
-        inFile   = open(inFile,"r")
-        
-        fromFileList = fromFile.readlines()
-        inFileList   = inFile.readlines()
-        
-        localSampleName = ""
-        
-        fromFileDataList = []
-        toAppend    = []
-        
-                
-        for fromFileLine in fromFileList:
-            
-            found = False
-            
-            fromFileDataList = fromFileLine.split("\t")
-            
-            fromFileSampleName = fromFileDataList[0]
-            
-                        
-            for inFileLine in inFileList:
-                
-                inFileLineSampleName = inFileLine.split("\t")[0]
-                
-                if fromFileSampleName == inFileLineSampleName:
-                    found = True
-                    break
-            
-            if not found:
-                                    
-                toAppend.append(fromFileLine)
+    fromFile = open(fromFile, "r")        
+    inFile   = open(inFile,"r")
 
-        
-        fromFile.close()
-        inFile.close()
-        
-        return toAppend
-    
-    except Exception:
+    fromFileList = fromFile.readlines()
+    inFileList   = inFile.readlines()
 
-        print traceback.print_exc()
-        
-        return []
+    localSampleName = ""
 
-    
+    fromFileDataList = []
+    toAppend    = []
+
+
+    for fromFileLine in fromFileList:
+
+        found = False
+
+        fromFileDataList = fromFileLine.split("\t")
+
+        fromFileSampleName = fromFileDataList[0]
+
+
+        for inFileLine in inFileList:
+
+            inFileLineSampleName = inFileLine.split("\t")[0]
+
+            if fromFileSampleName == inFileLineSampleName:
+                found = True
+                break
+
+        if not found:
+
+            toAppend.append(fromFileLine)
+
+
+    fromFile.close()
+    inFile.close()
+
+    return toAppend
+        
 def removeFile(file):
+    if (file != None):
 
-    try:
-    
-        if (file != None):
-            
-            if os.path.exists(file):
-                            
-                os.remove(file)
-                
-            return True
-        
-        return False
-
-    except Exception:
-        print traceback.print_exc()
-        return False
-    
-    
-def fileWriteLine(file, text):
-
-    try:
-    
-        if (file != None):
-            
-            fileHandle = open(file,"a")
-            fileHandle.write(text + "\n")
-            fileHandle.close()
-                
-            return True
-    
-        return False
-        
-
-    except Exception:
-        print traceback.print_exc()
-        return False
-
-
-def zipFile(file):
-
-    try:
         if os.path.exists(file):
 
-            call = "gzip " + file
-        
-            executeCall(call)
-        
-    except Exception:
-        print traceback.print_exc()
+            os.remove(file)
 
+        return True
+
+    return False
+    
+def fileWriteLine(file, text):
+    if (file != None):
+
+        fileHandle = open(file,"a")
+        fileHandle.write(text + "\n")
+        fileHandle.close()
+
+        return True
+
+    return False
+        
+
+def zipFile(file):
+    if os.path.exists(file):
+
+        call = "gzip " + file
+
+        executeCall(call)
 
 
 def copyFile(src,dest):
+    if ( os.path.exists(src) ):
 
-    try:
-
-        if ( os.path.exists(src) ):
-        
-            shutil.copy(src, dest)
-                    
-    except Exception:
-        print traceback.print_exc()
-
-
+        shutil.copy(src, dest)
 
 def executeThreadedCall(call):
-    
-    try:
-                
-        print call + "\n\n"
-        
-        lock = threading.Lock()
- 
-        lock.acquire()
-        
-        executionLogFile = open(executionLog,"a")
-       
-        executionLogFile.write(call + "\n\n")
+    print call + "\n\n"
 
-        executionLogFile.close()
+    lock = threading.Lock()
 
-        lock.release()
-        
+    lock.acquire()
 
-        subprocess.call(call, shell=True)
-        
-    
-    except Exception:
+    executionLogFile = open(executionLog,"a")
 
-        print traceback.print_exc()
+    executionLogFile.write(call + "\n\n")
+
+    executionLogFile.close()
+
+    lock.release()
+    subprocess.call(call, shell=True)
 
 
 
