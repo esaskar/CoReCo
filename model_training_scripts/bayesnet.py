@@ -12,7 +12,7 @@ Author: Esa Pitkanen (esa.pitkanen@helsinki.fi)
 
 import sys, math
 import random
-import traceback
+import numpy
 
 from digraph import Digraph
 
@@ -53,7 +53,7 @@ https://facwiki.cs.byu.edu/nlp/index.php/Log_Domain_Computations"""
 
 class BayesianNetwork:
 
-    EPS = 1e-300
+    EPS = numpy.nextafter(0, 1)
 
     def __init__(self):
         self.pds = {}
@@ -152,7 +152,7 @@ class BayesianNetwork:
             for x in self.domain[u]:
                 nbel = self.__la[u][x] + self.__pi[u][x] - total
                 if VERBOSE:
-                    print "BEL(%s = %s) = %s" % (u, x, nbel)
+                    print "BEL(%s = %s) = %s" % (u, x, nbel), total, self.__la[u][x], self.__pi[u][x], 2**nbel
                 posterior[u][x] = 2**nbel
         return posterior
 
@@ -433,14 +433,6 @@ def test7():
     evidence = {"v3" : {"v3_true" : 1, "v3_false" : 0}}
     post = bn.compute_posterior(evidence)
     print "Posterior:", post
-
-def testlog():
-    x = 0.9
-    y = 1e-320
-    lx = log2(x)
-    ly = log2(y)
-    lz = logadd(lx, ly)
-    print lx, ly, lz, 2**lz, "<==>", x, y, x + y
 
 if __name__ == "__main__":
     test7()
