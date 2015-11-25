@@ -100,8 +100,9 @@ try:
 
 
     iprscan = MetabolicReconstructionPipeline_IPRScan.MetabolicReconstructionPipeline_IPRScan()
-    iprscan.initialize(orgListFile, orgFastaDir,  orgIPRScanDir, InterProScan_EC_RAW_results, ec2go, seq_org_list, numberOfFragments)
+    iprscan.initialize(orgListFile, orgFastaDir,  orgIPRScanDir, InterProScan_EC_RAW_results, ec2go, seq_org_list)
     iprscan.getIPRScanScore()
+    
     
 
     modelTraining = MetabolicReconstructionPipeline_ModelTraining.MetabolicReconstructionPipeline_ModelTraining()

@@ -16,6 +16,8 @@ import glob
 import NGS_Util
 import NGS_IPRScan
 
+import MetabolicReconstructionPipeline_SplitFasta
+
 sys.path.append("..")
 import ScriptsDir
 
@@ -36,12 +38,13 @@ class MetabolicReconstructionPipeline_IPRScan:
     orgFastaDir      = ""  #Directory path containing organisms fasta sequences     #need to be initialized     
 
     seq_org_list     = ""  #need to be absolute
-#    new_seq_org_list = ""
-
-
-
-    def initialize(self, orgListFile, orgFastaDir,  orgIPRScanDir, fungi_InterProScan_result, ec2go, seq_org_list): #, new_seq_org_list):
     
+    numberOfFragments = 10
+
+    splitFasta = MetabolicReconstructionPipeline_SplitFasta.MetabolicReconstructionPipeline_SplitFasta()
+
+
+    def initialize(self, orgListFile, orgFastaDir,  orgIPRScanDir, fungi_InterProScan_result, ec2go, seq_org_list, numberOfFragments): 
         try:
             
             self.orgListFile         = orgListFile
@@ -53,36 +56,29 @@ class MetabolicReconstructionPipeline_IPRScan:
             self.ec2go            = ec2go
     
             self.seq_org_list     = seq_org_list
-#            self.new_seq_org_list = new_seq_org_list
+	    
+	    self.numberOfFragments = numberOfFragments
 
         except Exception:
             
             print traceback.print_exc()
     
     
-
     def splitFiles(self, organismName):
     
         try:
-        
-            print "splitFiles: " + organismName
+          
+                                  
+            org_fasta = NGS_Util.createFilePath(self.orgFastaDir, organismName+".faa")
 
-            org_fasta = NGS_Util.createFilePath(self.orgFastaDir, organismName + ".faa")
+            self.splitFasta.splitOrganismDataFile(organismName, org_fasta, self.numberOfFragments)
 
-            org_ipr_split_dir = NGS_Util.createDirectoryPath(self.orgIPRScanDir, organismName)
-
-            call = "sh " + ScriptsDir.IPRScanScripts_fsplit + " " + org_fasta + " " + org_ipr_split_dir
-
-	    NGS_Util.executeCall(call)
-            
-            return org_ipr_split_dir
-        
         except Exception:
-            
-            print traceback.print_exc()
-        
-        return ""
 
+	    print traceback.print_exc()
+
+        return self.splitFasta.organismSplitDataDir
+    
 
     def raw_split_IPRScan(self, organismName, organismSplitFile, splitNameIndex):
     
@@ -90,10 +86,11 @@ class MetabolicReconstructionPipeline_IPRScan:
         
             print "raw_split_IPRScan: " + organismName + " " + organismSplitFile
 
-            ipr_raw_file = NGS_Util.createFilePath(self.orgIPRScanDir, organismName + "_split_" +  str(splitNameIndex) + ".ipr.raw")
+	    ipr_raw_file_split = NGS_Util.createFilePath(self.orgIPRScanDir, organismName + "_split_" +  str(splitNameIndex) + ".ipr.raw")
 
-            if not os.path.exists(ipr_raw_file):
-                self.ngsIPRScan.protein_iprscan_to_raw_output(organismSplitFile, ipr_raw_file)
+            if not os.path.exists(ipr_raw_file_split):
+
+                self.ngsIPRScan.protein_iprscan_to_raw_output(organismSplitFile, ipr_raw_file_split)
 
             return ipr_raw_file
         
@@ -105,87 +102,20 @@ class MetabolicReconstructionPipeline_IPRScan:
         return ""
 
 
-
-    def raw_SingleRun_IPRScan(self, organismName, org_ipr_split_dir):
-    
-        try:
-
-            print "raw_SingleRun_IPRScan: " + organismName
-
-            org_ipr_split_list = []
-
-
-            for org_ipr_split_file in glob.glob(org_ipr_split_dir + "sequence*"):
-                org_ipr_split_list.append( org_ipr_split_file )
-
-            
-	    splitNameIndex = 0
-
-            for org_ipr_split_file in org_ipr_split_list:
-    
-                self.raw_split_IPRScan(organismName, org_ipr_split_file, splitNameIndex)
-                splitNameIndex +=1
-                
-            
-        except Exception:
-            
-            print traceback.print_exc()
-
-
-            
-    def raw_threaded_IPRScan(self, organismName, org_ipr_split_dir):
-    
-        try:
-
-            sleepCount = 0
-
-            print "raw_threaded_IPRScan: " + organismName
-
-            splitNameIndex = 0
-            org_ipr_split_list = []
-
-
-            for org_ipr_split_file in glob.glob(org_ipr_split_dir + "sequence*"):
-                org_ipr_split_list.append( org_ipr_split_file )
-
-            
-            splitNameIndex = -1
-            length = len(org_ipr_split_list)
-            
-            for index in range(length):
-    
-                for sleepCount in range(100):
-
-                    splitNameIndex +=1
-
-                    if splitNameIndex >= length:
-                        break
-                    
-                    t = threading.Thread(target=self.raw_split_IPRScan, args=(organismName, org_ipr_split_list[splitNameIndex], splitNameIndex))
-                    t.start()
-                    
-                time.sleep(1000)
-            
-        except Exception:
-            
-            print traceback.print_exc()
-
-            
-        except Exception:
-            
-            print traceback.print_exc()
-
-
-    
     def rawIPRScan(self, organismName, org_ipr_split_dir):
     
         try:
         
             print "rawIPRScan: " + organismName
-            
-            #####self.raw_threaded_IPRScan(organismName, org_ipr_split_dir)
-            self.raw_SingleRun_IPRScan(organismName, org_ipr_split_dir)
-            
+
+	    
+            for fragment in range(self.numberOfFragments):
+
+		org_ipr_split_file = NGS_Util.createFilePath(self.splitFasta.organismSplitDataDir,organismName + "_" +  str(fragment+1) )
+
+		self.raw_split_IPRScan(organismName, org_ipr_split_file, str(fragment+1))
+
+
             ipr_raw_file_split = NGS_Util.createFilePath(self.orgIPRScanDir, organismName + "_split_*")
             
             ipr_raw_file = NGS_Util.createFilePath(self.orgIPRScanDir, organismName + ".ipr.raw")
@@ -221,56 +151,6 @@ class MetabolicReconstructionPipeline_IPRScan:
             print traceback.print_exc()
         
         return ""
-
-
-
-    def create_new_seq_org_list(self,organismName, organismID): 	    #(2) extract query information from blast fmt11. : .part1
-    
-        try:
-        
-            print "create_new_seq_org_list: " + organismName
-   
-
-            orgListFile_fh = open(self.seq_org_list)
-            
-            found = False
-            
-            for line in orgListFile_fh:
-                    
-                    if organismID in line:
-                            found =  True
-                            break
-            
-            orgListFile_fh.close
-            
-            
-            if not found:
-                    
-                    org_fasta = NGS_Util.createFilePath(self.orgFastaDir, organismName + ".faa")
-                    
-                    org_fasta_fh = open(org_fasta)
-    
-                    orgListFile_fh = open(self.seq_org_list,"a")      #output file
-    
-                    for line in org_fasta_fh:
-                            
-                            if line.startswith(">"):
-                                    
-                                    if "|" in line:
-                                            id = line.split()[0].split("|")[1]
-                                    else:
-                                            id = line.split(" ")[0]
-                                            
-                                    orgListFile_fh.write( id + "\t" +  organismID + "\n" )
-                    
-                    org_fasta_fh.close
-                    orgListFile_fh.close
-         
-        except Exception:
-            
-            print traceback.print_exc()
-            
-       
 
 
     def extract_ipr2go_based_on_xml(self,organismName, ipr_xml_file):
@@ -344,13 +224,11 @@ class MetabolicReconstructionPipeline_IPRScan:
             orgListFile_fh = open(self.orgListFile)
 
             for line in orgListFile_fh:
-                if line.startswith("#"):
-                    continue
+                
                 organismNameID, organismName = line.strip().split()
                 
                 organism_IPR_final = NGS_Util.createFilePath(self.fungi_InterProScan_result, organismName + ".faa.IPR.final.txt")
 
-#                self.create_new_seq_org_list(organismName,organismNameID)
                 
                 if not os.path.exists(organism_IPR_final):
 
@@ -381,4 +259,8 @@ class MetabolicReconstructionPipeline_IPRScan:
             print traceback.print_exc()
             
         return ""
+
+
+
+
 
