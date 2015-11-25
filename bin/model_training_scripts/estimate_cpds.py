@@ -119,6 +119,7 @@ def estimate(ecscoresfn, modelecsfn, outfn, use_raw_scores = False):
         else:
 	    #.ecscore
 	    #EC BlastScore BlastQuerySeq BlastMatchSeq GTGScore GTGQuerySeq GTGMatchSeq
+            #print s
             ecs, maxblast, blastseq1, blastseq2, maxgtg, gtgseq1, gtgseq2 = s.strip().split("\t")
         if ecs == "?" or not ec_pa.match(ecs):
             continue

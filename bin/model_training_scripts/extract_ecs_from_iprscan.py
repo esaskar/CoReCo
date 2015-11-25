@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 #cut -f 8 seqid2ec.txt | uniq | grep -E -e "[0-9]+.[0-9]+.[0-9]+.[0-9]+" | uniq | cut -d "," -f 1 | uniq | wc -l
 import sys, os, re
+import common
+
+(longtoshort, orgnames) = common.read_organisms("../../data")
+#print longtoshort
+#print orgnames
+
 
 cutoff = 1e-10
 suffix = '.faa.IPR.final.txt'
@@ -12,14 +18,12 @@ odir = sys.argv[2]  # output dir
 
 fns = os.listdir(ddir)
 for fn in fns:
-    if not fn.endswith(".IPR.final.txt"):
+    if not fn.endswith(suffix):
             continue
     print fn    #like : name.IPR.final.txt
     f = open("%s/%s" % (ddir, fn))
     fn = fn[:-len(suffix)]   #fn like: Chaetomium_globosum
-    tmp = fn[0]
-    tmp1 = fn.split("_")[1][0:3]
-    fn = tmp + tmp1 #short name
+    fn = longtoshort[fn]
     print "New fn ", fn
     o = open("%s/%s" % (odir, fn), "w")
     o.write("#ECs in InterProScan results %s with cutoff = %s\n" % (fn, cutoff))

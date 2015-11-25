@@ -98,25 +98,7 @@ def build_dag(T, use_tree = True, blast = True, gtg = True):
                 dag.add_edge(u, get_gtg_node_name(u))
     return dag, observed_species, ancestors
 
-# def build_naive_dag(T):
-#     parents, children = findParentsAndChildren(T, ROOT_NODE)
-#     dag = Digraph()
-#     observed_species = set()
-#     for u in T:
-#         if u not in children:
-#             observed_species.add(u)
-#             dag.add_edge(u, get_blast_node_name(u))
-#             dag.add_edge(u, get_gtg_node_name(u))
-#     ancestors = set()
-#     return dag, observed_species, ancestors
-
-
 def set_internal_cpds(bnet, cpds):
-
-#    print bnet.dag.children
-#    print "\n\n"
-#    print cpds
-#    print "\n\n"
     for u in bnet.dag.children:
         if len(bnet.dag.children[u]) > 0:
             if (len(bnet.dag.parents[u]) == 0):
@@ -125,8 +107,6 @@ def set_internal_cpds(bnet, cpds):
             else:
                 # species node
                 parent = list(bnet.dag.parents[u])[0]
-
-                print cpds[parent]
 
                 mp = cpds[parent][u]
                 
@@ -237,10 +217,8 @@ def build_naive_model(T, cpds):
     return bnet, observed_species, ancestors
 
 def find_data_point(point, points):
-    #print point, points
     A = map(float, points)
     pos = bisect.bisect_left(A, float(point))
-    #print A, pos
     if pos >= len(points):
         return points[-1]
     elif pos == 0:
@@ -253,7 +231,6 @@ def find_data_point(point, points):
 
 def map_evidence(model, evidence, use_blast = True, use_gtg = True):
     mapped = {}
-    #print evidence
     for node in evidence:
 
         if node not in model.dag.parents:
@@ -273,7 +250,6 @@ def map_evidence(model, evidence, use_blast = True, use_gtg = True):
             else:
                 raise Exception("Invalid source in evidence: %s" % (source))
 
-            #print node, source, source_node
             points = model.pds[source_node].keys()
             points.sort(lambda x, y: cmp(float(x), float(y)))
             x = find_data_point(evidence[node][source], points)
@@ -284,10 +260,6 @@ def map_evidence(model, evidence, use_blast = True, use_gtg = True):
                 else:
                     v = 0.0
                 mapped[source_node][p] = v
-    #print "MAPPED_EVIDENCE:"
-    #for node in mapped:
-    #    print node, mapped[node]
-    #sys.exit()
     return mapped
 
 def compute_reaction_scores(model, naive_model, 
@@ -303,18 +275,10 @@ def compute_reaction_scores(model, naive_model,
         rmin, rmax = rrange
         keys = keys[rmin:rmax]
     for reaction in keys:
-        #reaction = "1.1.1.169"
         sys.stderr.write("%d/%d: EC %s\n" % (c, len(evidence), reaction))
-        #scores[reaction] = {}
         mapped_evidence = map_evidence(model, evidence[reaction])
-        #print "Computing posterior"
         ppd = model.compute_posterior(mapped_evidence)
-
-        #print "\n**********************************\n"
-
         ppd_naive = naive_model.compute_posterior(mapped_evidence)
-        #print "posterior:", ppd
-        #scores[reaction] = ppd
 
         mapped_evidence_blast = map_evidence(model, evidence[reaction], use_gtg = False)
         mapped_evidence_gtg = map_evidence(model, evidence[reaction], use_blast = False)        
@@ -340,12 +304,11 @@ def compute_reaction_scores(model, naive_model,
                 else:
                     score.npscore = ppd_naive[node]["1"]
                     score.logratio = math.log(score.pscore / score.npscore) / math.log(2)
+                    #Addition on 20150603
+                    score.pscore = max(score.btscore, score.gtscore) 
                 of.write("%s\t%s\t%s\n" % (reaction, node, score))
-                #of.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (reaction, node, p, pn, ppn, pblast, pgtg))
 
         c += 1
-        #if c > 10:
-        #    sys.exit()
 
 def main(ddir, rrange = None):
     read_parameters(ddir)
@@ -363,8 +326,6 @@ def main(ddir, rrange = None):
     ef = open("%s/evidence" % (ddir))
     evidence = read_evidence(ef)
 
-
-
     model, observed_species, ancestors = build_model(t, evidence_cpds, internal_cpds)
     naive_model, spec2, anc2 = build_naive_model(t, evidence_cpds)
     blast_model, spec3, anc3 = build_blast_model(t, evidence_cpds, internal_cpds)
@@ -380,12 +341,6 @@ def main(ddir, rrange = None):
     compute_reaction_scores(model, naive_model, 
                             blast_model, gtg_model, evidence, 
                             observed_species, ancestors, of, rrange)
-    # o = sys.stdout
-    # for r in scores:
-    #     for u in scores[r]:
-    #         if u in observed_species:
-    #             score = scores[r][u]["1"]
-    #             o.write("%s\t%s\t%s\t%s\n" % (r, u, score, common.score_transform(score)))
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:

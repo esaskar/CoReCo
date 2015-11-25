@@ -13,48 +13,42 @@ DATE_FORMAT = "%Y.%m.%d %H:%M:%S"
 # Sequence analysis parameters
 
 BLAST_PVALUE_CUTOFF = 1e-200
-EXP_APPROX = 1e-5
+EXP_APPROX = 1e-5 # needed in computeBlastPvalues.py currently not used in CoReCo
 
 # Global input files
 
-AUX_DIR = "../../data/Kegg/aux"
-#FILE_EC_MAP = "ec-list.txt"
-#FILE_EC_MAP = "%s/ec-list-augmented.txt" % (AUX_DIR) # contains manual fixes to KEGG mappings; see README
-FILE_EC_MAP = "%s/ec-list.txt" % (AUX_DIR) # contains manual fixes to KEGG mappings; see README
-FILE_METABOLITE_NAMES = "%s/kegg-compounds" % (AUX_DIR) 
-FILE_STOICHIOMETRY = "kegg/balances.eqn"
-FILE_SBML_OUTPUT = "network.sbml"
+#AUX_DIR = "../../data/Kegg/aux"
+#FILE_EC_MAP = "%s/ec-list.txt" % (AUX_DIR) # contains manual fixes to KEGG mappings; see README
 
+# Model training files
 
-# Reconstruction project files
+PARAMETER_FILE = "parameters"
+SOURCE_METABOLITE_FILE = "sources"
+REACTION_SCORE_PLOT_DIR = "score-plots"
+EC_VISUALS_DIR = "ec-visuals"
+TREE_CPD_FILE = "tree.cpds"
 
-PATHWAYS_DIR = "pathways"
+EVIDENCE_FILE = "evidence"  # needed in import_data.py currently not used in CoReCo
+REACTION_SCORE_FILE = "reaction-scores" # not needed, so presumably hard coded elsewhere
+FULL_REACTION_SCORE_FILE = "reaction-scores.full" # needed in merge_scores.py currently not used in CoReCo
+ROC_CURVE_DIR = "rocs" # needed in roc.py currently not used in CoReCo
+CPD_DIR = "cpds" # needed in compute_reaction_scores.py currently not used in CoReCo
+ORGANISM_LIST_FILE = "org_list.backup" #needed in import_data.py and merge_scores.py currently not used in CoReCo
+
+# Network reconstruction files
+
+RECO_RESULT_DIR = "reco"
+REACTION_SCORE_DIR = "rscores"
 FILLS_FILE = "fills"
+SPONTANEOUS_FILE = "sponts.txt"
 NETWORK_EC_FILE = "network.ecs"
 NETWORK_ECLIST_FILE = "network.eclist"
 NETWORK_REACTION_FILE = "network.reactions"
 NETWORK_FILE = "network"
 
-REACTION_SCORE_DIR = "rscores"
-RECO_RESULT_DIR = "reco"
+PATHWAYS_DIR = "pathways" 
 FILE_EC_GRAPH = "network.ecgraph"
 
-FILE_ECS_TP = "comparison-ec.tps"
-FILE_ECS_FP = "comparison-ec.fps"
-FILE_ECS_FN = "comparison-ec.fns"
-
-PARAMETER_FILE = "parameters"
-
-EVIDENCE_FILE = "evidence"
-REACTION_SCORE_FILE = "reaction-scores"
-FULL_REACTION_SCORE_FILE = "reaction-scores.full"
-ROC_CURVE_DIR = "rocs"
-CPD_DIR = "cpds"
-ORGANISM_LIST_FILE = "org_list.backup"
-SOURCE_METABOLITE_FILE = "sources"
-REACTION_SCORE_PLOT_DIR = "score-plots"
-EC_VISUALS_DIR = "ec-visuals"
-TREE_CPD_FILE = "tree.cpds"
 
 def floatNone(x):
     if x == "None":
@@ -190,10 +184,6 @@ def read_dict(f, vsplit = None):
         D[k] = v
     return D
 
-def read_source_metabolites(ddir):
-    f = open("%s/%s" % (ddir, SOURCE_METABOLITE_FILE))
-    return read_set(f)
-
 def read_organisms(ddir):
     orgnames = {}
     longtoshort = {}
@@ -267,13 +257,6 @@ def read_tree_adj_list(ddir):
         parent[v] = u
     return parent, children
 
-
-def read_fills(ddir):
-    f = open("%s/%s" % (ddir, FILLS_FILE))
-    results = {}
-    for line in read_lines(f):
-        results[line[0]] = FillReaction(line)
-    return results
         
 def read_ec_list(f):
     ec2r = {}
@@ -365,6 +348,27 @@ def blast_joint_score(fwdp, revp):
 
 def max_blast_joint_score():
     return blast_joint_score(BLAST_PVALUE_CUTOFF, BLAST_PVALUE_CUTOFF)
+
+def parse_molecule_names(fn):
+    print fn
+    f = open(fn)
+    names = {}
+    for s in f:
+        apu=len(s.strip().split("\t"))
+        if apu==3:
+            mid, cname, sname  = s.strip().split("\t")
+        else: 
+            if apu==2:
+                mid, cname  = s.strip().split("\t")
+            else:
+                if apu==1:
+                    mid = s
+                    cname = mid
+                else:
+                    print s
+                    mid, cname, sname  = s.strip().split("\t")
+        names[mid] = cname
+    return names
 
 if __name__ == "__main__":
     pass

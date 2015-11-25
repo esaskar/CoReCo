@@ -35,6 +35,8 @@ for fn in fns:
         #seq1, seq2, ec, maxblast, maxgtg = s.strip().split("\t")
 		seq1, seq2, ec, jointp, maxgtg = s.strip().split("\t")
 		ecs = ec.split(",")
+		if "" in ecs:
+			print s
 		if "?" in ecs:
 			ecs.remove("?")
 		if len(ecs) == 0:
