@@ -75,6 +75,10 @@ taxonomy              = ProjectDir.taxonomy
 networkReconstructionOrgList = ProjectDir.networkReconstructionOrgList
 
 keggAtomMapsDataDir = ProjectDir.keggAtomMapsDataDir
+boundFile			= ProjectDir.boundsPath
+exchangeFile		 	= ProjectDir.exchangeReactionsPath
+pathwayFile                     = ProjectDir.pathwayFile
+rxnNamesFile                    = ProjectDir.rxnNamesFile
 
 ################################################################################################################################################################################
 
@@ -108,14 +112,12 @@ try:
     modelTraining.initialize(orgListFile, jointBlastDir, GTGKNNDir, InterProScan_EC_RAW_results, phylogeneticTreeFile, modelTrainingDir)
     modelTraining.runModelTrainingAlgo()
 
-
-
     networkReconstruction = MetabolicReconstructionPipeline_NetworkReconstruction.MetabolicReconstructionPipeline_NetworkReconstruction()
-    networkReconstruction.initialize( modelTrainingModelDir, intAaccept, intReject, keggDataDir, taxonomy, networkReconstructionOrgList)
+    networkReconstruction.initialize(boundFile, exchangeFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList)
     networkReconstruction.doNetworkReconstruction()
     
     createSBML = MetabolicReconstructionPipeline_CreateSBML.MetabolicReconstructionPipeline_CreateSBML()
-    createSBML.initialize(boundFile, exchangeFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, taxonomy, networkReconstructionOrgList)
+    createSBML.initialize(boundFile, exchangeFile, pathwayFile, rxnNamesFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList)
     createSBML.doCreateSBML()
         
 except Exception:

@@ -3,6 +3,7 @@
 Author: M. Fahad Syed (fahad.syed@vtt.fi)
 """
 
+
 import os
 import sys
 import traceback
@@ -13,42 +14,65 @@ import ScriptsDir
 
 sys.path.append(ScriptsDir.ReconstructionScripts)
 
+
 class MetabolicReconstructionPipeline_NetworkReconstruction:
 
     modelTrainingModelDir        = ""
     keggDataDir                  = ""
     taxonomy                     = ""
-    intAaccept                   = 0.02
+    intAaccept                   = 0.03
     intReject                    = 2
     networkReconstructionOrgList = ""
+    ec2rxnFile                   = ""
    
-    def initialize(self, modelTrainingModelDir, intAaccept, intReject, keggDataDir, taxonomy, networkReconstructionOrgList):
-        self.modelTrainingModelDir        = modelTrainingModelDir
-        self.keggDataDir                  = keggDataDir
-        self.taxonomy                     = taxonomy
-        self.intAaccept                   = intAaccept
-        self.intReject                    = intReject
-        self.networkReconstructionOrgList = networkReconstructionOrgList
+    def initialize(self, boundsFile, exchangeFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList):
+    
+        try:
+            self.bounds			      = boundsFile
+	    self.exchangeFile		      = exchangeFile	
+            self.modelTrainingModelDir        = modelTrainingModelDir
+            self.keggDataDir                  = keggDataDir
+            self.ec2rxnFile                   = ec2rxnFile
+            self.taxonomy                     = taxonomy
+            self.intAaccept                   = intAaccept
+            self.intReject                    = intReject
+            self.networkReconstructionOrgList = networkReconstructionOrgList
+
+    
+        except Exception:
+            print traceback.print_exc()
+
        
     def doNetworkReconstruction(self):
-        print "doNetworkReconstruction"
+    
+        try:
 
-        curDirectory = os.getcwd()
-        os.chdir(ScriptsDir.ReconstructionScripts)
+            print "doNetworkReconstruction"
 
-        orgListFile_fh = open(self.networkReconstructionOrgList)
-        for orgLine in orgListFile_fh:
+	    curDirectory = os.getcwd()
+	    os.chdir(ScriptsDir.ReconstructionScripts)
+        
+            orgListFile_fh = open(self.networkReconstructionOrgList)
 
-            organismID = orgLine.strip()
-            if organismID.startswith("#"):
-                continue
+            for orgLine in orgListFile_fh:
+                
+                organismID = orgLine.strip()
+		
+		print "Network reconstruction for: " + organismID
 
-            print "Network reconstruction for: " + organismID
+		call = "bash " +  ScriptsDir.ReconstructionScripts_reco_dir + " " + self.bounds + " " + self.modelTrainingModelDir + " " + str(self.intAaccept) + " " + str(self.intReject) + " " + organismID  + " " + ScriptsDir.ReconstructionScripts +  " " +  self.keggDataDir  + " " + self.taxonomy  + " " + self.bounds + " " + self.ec2rxnFile
+		
+		NGS_Util.executeCall(call)
 
-            call = "bash " +  ScriptsDir.ReconstructionScripts_reco_dir + " " + self.modelTrainingModelDir + " " + str(self.intAaccept) + " " + str(self.intReject) + " " + organismID  + " " + ScriptsDir.ReconstructionScripts +  " " +  self.keggDataDir  + " " + self.taxonomy  
+            orgListFile_fh.close() 
+     
 
-            NGS_Util.executeCall(call)
+	    os.chdir(curDirectory)
 
-        orgListFile_fh.close() 
-        os.chdir(curDirectory)
+        except Exception:
+            
+            print traceback.print_exc()
+            
         return ""
+    
+
