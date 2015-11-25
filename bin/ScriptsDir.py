@@ -10,7 +10,7 @@ import traceback
 sys.path.append("model_reconstruction_pipeline")
 import NGS_Util
 
-projectDir = os.path.dirname(os.path.realpath(__file__))
+projectDir = "/project_path/coreco"
 
 ##########################################################################################     Blast Toolkit      ##########################################################################################
 
@@ -22,10 +22,21 @@ BlastDustDir = "Tools/ncbi-blast-2.2.28+/db/"   #Needs to be set the user#
 
 IprscanDir   = "Tools/iprscan/bin/"
 
+############################################################################################################################################################################################################
+
+Java_PATH    = "/usr/java/latest/bin/"
+LibSBML_PATH = "/share/apps/local/lib64/python2.6/site-packages/"
+
+############################################################################################################################################################################################################
+
+fastaSplitNDir  = "Path to the program to cut the fasta file in pieces called fastasplitN (Author: David Mathog, Biology Division, Caltech")
+fastaSplitN     = NGS_Util.createFilePath(fastaSplitNDir,"fastasplitn")
+
 ###############################################################################################################################################################################################
 
 
-#projectBinDir  = NGS_Util.createDirectoryPath(projectDir,"bin")
+
+projectBinDir  = NGS_Util.createDirectoryPath(projectDir,"bin")
 
 BLASTScripts = NGS_Util.createDirectoryPath(projectDir,"Blast_scripts")
 BlastScripts_blast=BLASTScripts + "blast.bash"
@@ -94,4 +105,8 @@ ReconstructionScripts_reco_dir =  ReconstructionScripts + "reco-dir"
 keggParsingScripts =  NGS_Util.createDirectoryPath(projectDir,"kegg-parsing")
 keggParsingScripts_build_kegg_no_general = keggParsingScripts + "build_kegg_no_general.sh"
 
-
+modelReconstructionPipelineScripts = NGS_Util.createDirectoryPath(projectBinDir,"model_reconstruction_pipeline")
+vttClusterBlast    = modelReconstructionPipelineScripts  + "VTTClusterBlast.sh"
+vttClusterIprscan  = modelReconstructionPipelineScripts  + "VTTClusterIprscan.sh"
+vttClusterGTGBlast = modelReconstructionPipelineScripts  + "VTTClusterGTGBlast.sh"
+vttClusterPipeline = modelReconstructionPipelineScripts  + "VTTClusterPipeline.sh"

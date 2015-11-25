@@ -75,6 +75,9 @@ networkReconstructionOrgList = ProjectDir.networkReconstructionOrgList
 
 keggAtomMapsDataDir = ProjectDir.keggAtomMapsDataDir
 
+################################################################################################################################################################################
+
+numberOfFragments = ProjectDir.numberOfFragments
 
 try:
     
@@ -84,7 +87,7 @@ try:
 
 
     blast = MetabolicReconstructionPipeline_Blast.MetabolicReconstructionPipeline_Blast()
-    blast.initialize(uniprot_fasta, ec_files, uniprot_sprot_dat, uniprot_dust, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir)
+    blast.initialize(uniprot_fasta, ec_files, uniprot_sprot_dat, uniprot_dust, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir, numberOfFragments)
     blast.getBlastScore()
 
 
@@ -110,7 +113,9 @@ try:
     networkReconstruction.initialize( modelTrainingModelDir, intAaccept, intReject, keggDataDir, taxonomy, networkReconstructionOrgList)
     networkReconstruction.doNetworkReconstruction()
     
-    
+    createSBML = MetabolicReconstructionPipeline_CreateSBML.MetabolicReconstructionPipeline_CreateSBML()
+    createSBML.initialize(boundFile, exchangeFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, taxonomy, networkReconstructionOrgList)
+    createSBML.doCreateSBML()
         
 except Exception:
     
