@@ -176,11 +176,6 @@ class MetabolicReconstructionPipeline_PreProcess:
 				else:
 					id = seq_id.strip()
 
-
-#				if "|" in line:
-#					id = line.split()[0].split("|")[1]
-#				else:
-#					id = line.split(" ")[0]
 					
 				seqOrgListFile_fh.write( id + "\t" +  organismID + "\n" )
 

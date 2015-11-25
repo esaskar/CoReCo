@@ -96,6 +96,7 @@ NGS_Util.createDirectory(modelTrainingDir)
 
 exchangeReactionsPath	     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/exchangeReactions.txt")
 boundsPath		     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/harvestedbounds.txt")
+rxnNamesFile		     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/reaction-names")
 pathwayFile		     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/kegg-pathways")
 modelTrainingModelDir        = NGS_Util.createFilePath(modelTrainingDir,"Model")
 intAaccept                   = 0.3
