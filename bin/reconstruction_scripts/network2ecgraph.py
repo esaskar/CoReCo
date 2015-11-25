@@ -16,8 +16,10 @@ REMOVE_COFACTORS = 1
 STOICHIOMETRY = "../../data/Kegg/kegg-no-general/nooxygen.eqn"
 COFACTORS = "../../data/Kegg/aux/cofactors"
 
-def main(inputdir):
-    ec2r, r2ec = common.read_ec_list(open(common.FILE_EC_MAP))
+def main(inputdir, ecfile):
+
+    ec2r, r2ec = common.read_ec_list(open(ecfile))
+
     reactions = common.read_stoichiometry(open(STOICHIOMETRY)).reactions
     reco = common.read_reconstruction(open("%s/%s" % (inputdir, common.NETWORK_REACTION_FILE)))
     cofactors = common.read_set(open(COFACTORS))
@@ -25,7 +27,8 @@ def main(inputdir):
 
     R = set()
     for r in reco:
-        baser = r.split("_")[0]
+        baser = r.split("_")[0].replace("#","_")
+        #baser = r.split("_")[0]
         R.add(baser)
 
     E = {}
@@ -86,4 +89,4 @@ def main(inputdir):
             o.write("%s\t%s\t%s\t%s\n" % (ec1, ec2, ",".join(ecg[ec1][ec2]), cofactor))
 
 if __name__ == "__main__":
-    main(inputdir = sys.argv[1])
+    main(inputdir = sys.argv[1],ecfile = sys.argv[2])

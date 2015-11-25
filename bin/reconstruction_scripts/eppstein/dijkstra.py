@@ -42,9 +42,9 @@ def Dijkstra(G,start,end=None):
 	
 	for v in Q:
 		D[v] = Q[v]
-		if v == end: break
-
-		for w in G[v]:
+		if v == end: break		
+		try:		    	
+		    for w in G[v]:
                         if w == None:
                                 print v, G[v]
                                 assert(0)
@@ -55,6 +55,9 @@ def Dijkstra(G,start,end=None):
 			elif w not in Q or vwLength < Q[w]:
 				Q[w] = vwLength
 				P[w] = v
+	 	except: 
+			#print len(Q), v, D[v]	    
+			pass
 	
 	return (D,P)
 			

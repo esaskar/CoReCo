@@ -7,7 +7,8 @@ import common
 
 def get_reaction_id(r):
     """R00001_1_rev -> R00001"""
-    return r.split("_")[0]
+    return r.split("_")[0].replace("#","_")
+#    return r.split("_")[0]
 
 def write_matrix(reco, eqns, mol2name, ofn):
 
@@ -81,7 +82,11 @@ def convert_eqn_side(side):
             except ValueError:
                 coeff = float("NaN")
         else:
-            mol = re.findall("\w\d{5}", vals[0])[0]
+            ##mol = re.findall("\w\d{5}", vals[0])[0]
+            mol = vals[0].strip()
+            print vals[0] + "......" + mol
+
+
             #mol = vals[0]
             coeff = 1
         new.append((mol, coeff))
@@ -105,11 +110,11 @@ def read_balanced_reactions(f):
     return reactions
 
 def main(rdir, eqnfn, molfn, outfn):
-    mol2name = {}
-    f = open(molfn)
-    for s in f:
-        molid, name, name2 = s.strip().split("\t")
-        mol2name[molid] = name
+    
+    print("Loading molecule names... ")
+    # dictionary where keys are mol ids (C00001) and
+    # items are names from second column of kegg-compounds file
+    mol2name = common.parse_molecule_names(molfn)
     print "Loading reconstruction: %s/%s" % (rdir, common.NETWORK_REACTION_FILE)
     f = open("%s/%s" % (rdir, common.NETWORK_REACTION_FILE))
     bf = open(eqnfn)

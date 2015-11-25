@@ -9,7 +9,7 @@ sys.path.append("../model_training_scripts/")
 
 import atommap, common, network, kspyen
 import visualize_atom_graph
-import network2sbml
+#import network2sbml
 import map_result_in_kegg
 
 from priodict import priorityDictionary
@@ -61,6 +61,33 @@ REJECT_CYCLIC = 0
 COMPUTE_YIELD = 1
 REJECT_NONPOSITIVE_YIELD = 0
 FBA_EPS = 1e-6
+
+B = []
+
+def readBoundaries(path): 
+    f = open(path)   
+    for s in f: 
+	name, idreaction, model, lb, up = s.strip().split("\t")         
+	bo = Bounds()
+	bo.name = name
+	bo.lb = lb
+	bo.ub = up	   
+	B.append(bo)
+    f.close()
+
+def searchBound(name):
+    bound = B[1]	
+    for b in B:
+	if name in b.name:
+	    bound = b	
+            break
+    return bound 
+		
+class Bounds:
+    def __init__(self):
+	self.name = 'bounds'
+	self.lb = '-1000'
+	self.up = '1000'
 
 class Parameters:
     def __init__(self):
@@ -168,8 +195,11 @@ class SearchState:
         if len(self.unsat) == 0:
             return 0
         estimate = 0
-        for u in self.unsat:
-            estimate += atom_scores[u]
+	try:
+            for u in self.unsat:
+                estimate += atom_scores[u]
+	except:
+	    return 0 	
         return estimate
 
     def total_cost(self, atom_scores):
@@ -343,14 +373,6 @@ def find_aux_sources(R, amp, sources):
     agi = network.AtomGraph(res, lambda x: 1) # atom graph induced by R
     ratoms = simple_graph.find_reachable(agi.E, sources)
 
-def parse_molecule_names(fn):
-    f = open(fn)
-    names = {}
-    for s in f:
-        mid, cname, sname = s.strip().split("\t")
-        names[mid] = cname
-    return names
-
 def read_reaction_scores(fn, amp, r2ec, threshold):
     f = open(fn)
     scores = {}
@@ -372,10 +394,12 @@ def read_reaction_scores(fn, amp, r2ec, threshold):
         if r not in scores:
             rscore = common.Score()
             if r not in r2ec or r2ec[r] == ["?"]:
+		# Spontaneous reactions
                 # No EC association known for this reaction
-                rscore.pscore = threshold
+                rscore.pscore = threshold - 1e-6  # this should fix the problem of reactions appearing in models without gene evidence with score==threshold
             else:
-                # EC association known but EC not scored
+                # EC association known but EC not scored (EC does not appear in reaction-scores.full)
+                # does not appear in ec_files.txt (not in swiss-prot training data)
                 rscore.pscore = DEFAULT_REACTION_SCORE
             rscore.ec = ["?"] # TODO
             rscore.npscore = rscore.btscore = rscore.gtscore = rscore.bscore = rscore.gscore = 0
@@ -643,12 +667,14 @@ tgt_atoms -- target nodes
     # atom graph set up:
     # add target edges and collect edges outgoing from target nodes
     for u in tgt_atoms:
-        assert(u in params.reachable_atoms)
-        if u not in orig_edge_costs:
-            orig_edge_costs[u] = {}
-        for v in params.ag.E[u]:
-            orig_edge_costs[u][v] = params.ag.E[u][v]
-        params.ag.add_edge(u, TGT_NODE, 0, [])
+        #assert(u in params.reachable_atoms)
+	try:
+            if u not in orig_edge_costs:
+                 orig_edge_costs[u] = {}
+            for v in params.ag.E[u]:
+                 orig_edge_costs[u][v] = params.ag.E[u][v]
+            params.ag.add_edge(u, TGT_NODE, 0, [])
+	except: pass	   
 
     # collect incoming edges to source and forbidden nodes
     # NOTE: forbidden_atoms is currently always empty
@@ -709,6 +735,7 @@ tgt_atoms -- target nodes
 
     return noncyclics #paths
 
+
 def collect_reaction_sets(paths, tgt_atoms, params):
     reaction_sets = set()
     for pi, p in enumerate(paths):
@@ -728,12 +755,12 @@ def collect_reaction_sets(paths, tgt_atoms, params):
                 if ccost < bestc:
                     bestr = cr
                     bestc = ccost
-            adds.insert(0, bestr)
-
+            adds.insert(0, bestr) 	    
+	 
         if contains_both_directions(adds):
             #print "        REJECT - DIRECTIONALITY"#, adds
             continue
-
+	
         reaction_sets.add(tuple(adds))
 
     return reaction_sets
@@ -821,8 +848,8 @@ def compute_yield(state, target_molecules, sources, amp):
     for r in state.R:
         N[next_r_index] = {}
         r2ix[r] = next_r_index
-        if PRINT_FBA:
-            print r, "->", next_r_index
+        #if PRINT_FBA:
+        #    print r, "->", next_r_index
         re = amp.reactions[r]
         all_mols.update(re.substrates)
         all_mols.update(re.products)
@@ -841,8 +868,8 @@ def compute_yield(state, target_molecules, sources, amp):
     # add metabolite sink reactions and set up objective vector
     for mol in all_mols:
         mol_ix = get_index(mol, m2ix)
-        if PRINT_FBA:
-            print "SINK", mol, mol_ix, "->", next_r_index
+        #if PRINT_FBA:
+        #    print "SINK", mol, mol_ix, "->", next_r_index
         N[next_r_index] = {}
         N[next_r_index][mol_ix] = -1.0
         if mol in target_molecules:
@@ -850,14 +877,14 @@ def compute_yield(state, target_molecules, sources, amp):
         next_r_index += 1
 
     not_balanced = all_mols.difference(balanced_mols)
-    if PRINT_FBA:
-        print "NOT_BALANCED", not_balanced
+    # if PRINT_FBA:
+    #     print "NOT_BALANCED", not_balanced
     # add metabolite source reactions
     intakes = {}
     for mol in not_balanced:
         mol_ix = get_index(mol, m2ix)
-        if PRINT_FBA:
-            print "SOURCE", mol, mol_ix, "->", next_r_index
+        #if PRINT_FBA:
+        #    print "SOURCE", mol, mol_ix, "->", next_r_index
         N[next_r_index] = {}
         N[next_r_index][mol_ix] = 1.0
         intakes[next_r_index] = mol_ix
@@ -1164,7 +1191,7 @@ def gapless_fix(gapr, params):
 def choose_next_reaction(current_state, params):
     #print "choose_next_reaction: compute_atom_score_heuristic"
     reachable_atoms, atom_scores, preceding_reactions = compute_atom_score_heuristic(source_atoms = current_state.reached, params = params)
-
+	
     current_base = set(map(lambda x: params.amp.reactions[x].basename(), current_state.R))
     candidates = []
 
@@ -1180,13 +1207,14 @@ def choose_next_reaction(current_state, params):
 
     while len(candidates) == 0:
         
-        for rbase in base_reactions:
+        for rbase in base_reactions:	   
             if rbase in params.failed_reactions or rbase in current_base:
                 continue
             mapname = "%s_1" % (rbase)      # use reaction with atom map if available
             if mapname not in params.scores:
                 mapname = "%s_0" % (rbase)  # use unmapped reaction instead
             if params.scores[mapname].pscore > params.threshold:
+ 		#print "candidate:", mapname	
                 candidates.append(mapname)
 
         #print "Candidates:", candidates
@@ -1267,11 +1295,13 @@ When unable to add reaction, add it to failed list. After no more reactions can 
             rev = "%s_0_rev" % (gapr)
 
         # delete atom graph edges associated with the reverse direction
-        params.ag.delete_reaction_edges(params.amp.reactions[rev])
-        decision_fwd, state_fwd = gapless_fix(fwd, params)
-#amp, ag, sources, ubiqs, scores, reachable_atoms, mol_names, atom_scores, path_reject_threshold, odir, current_state, source_atoms, cdir)
-        params.ag.add_reaction_edges(params.amp.reactions[rev], rcost(params.scores[rev].pscore))
+	bound = searchBound(gapr)
 
+	
+        params.ag.delete_reaction_edges(params.amp.reactions[rev])
+        decision_fwd, state_fwd = gapless_fix(fwd, params) #amp, ag, sources, ubiqs, scores, reachable_atoms, mol_names, atom_scores, path_reject_threshold, odir, current_state, source_atoms, cdir)
+        params.ag.add_reaction_edges(params.amp.reactions[rev], rcost(params.scores[rev].pscore))
+	
         params.ag.delete_reaction_edges(params.amp.reactions[fwd])
         decision_rev, state_rev = gapless_fix(rev, params) #, amp, ag, sources, ubiqs, scores, reachable_atoms, mol_names, atom_scores, path_reject_threshold, odir, current_state, source_atoms, cdir)
         params.ag.add_reaction_edges(params.amp.reactions[fwd], rcost(params.scores[fwd].pscore))
@@ -1279,7 +1309,7 @@ When unable to add reaction, add it to failed list. After no more reactions can 
         ACCEPTS = [ALREADY_IN_NET, NOT_GAPPED, GAP_FILLED]
 
         #print decision_fwd, state_fwd.cost, decision_rev, state_rev.cost
-
+	
         if decision_rev not in ACCEPTS or (decision_fwd in ACCEPTS and state_fwd.cost <= state_rev.cost):
             #message(VERBOSE_ALL, "    Forward dir selected %s %s" % (state_fwd.cost, state_rev.cost))
             new_current_state = state_fwd
@@ -1312,7 +1342,8 @@ When unable to add reaction, add it to failed list. After no more reactions can 
             message(VERBOSE_ALL, "Adding high-scoring failed reaction %s" % (rn))
             params.current_state.add_reaction(rn, params.amp, params.scores)
 
-    oo = open("sponts.txt", "w")
+    oo = open("%s/%s" % (params.odir, common.SPONTANEOUS_FILE), "w")
+
     if ADD_SPONTANEOUS_REACTIONS:
         for br in params.amp.spontaneous_reactions:
             for r in params.amp.base_reactions[br]:
@@ -1423,28 +1454,33 @@ def gapless(amp, net, sources, ubiqs, scores, mol_names, threshold, path_reject_
     #message(VERBOSE_SOME, "Generating SBML...")
     #network2sbml.main(odir, common.FILE_STOICHIOMETRY, common.FILE_METABOLITE_NAMES, "%s/%s" % (odir, common.FILE_SBML_OUTPUT))
 
-    message(VERBOSE_SOME, "Mapping pathways to KEGG...")
-    map_result_in_kegg.main(odir, odir)
+    ## New reaction bag doesn't contain kegg-pathway mappings 
+    ## Skipping this tep entirely
+    #message(VERBOSE_SOME, "Mapping pathways to KEGG...")
+    #map_result_in_kegg.main(odir, odir)
 
     message(VERBOSE_SOME, "\o/ All done \o/")
 
-def main(cdir, kdir, adir, sourcesfn, ubiqfn, scoresfn, threshold, path_reject_threshold, odir, target_reactions = None):
-
+def main(bfile, cdir, kdir, adir, sourcesfn, ubiqfn, scoresfn, threshold, path_reject_threshold, odir, cnamefile, ecfile, target_reactions = None):   
+    readBoundaries(bfile)
+    print bfile
     try:
         os.mkdir(odir)
     except:
         pass
 
-    ec2r, r2ec = common.read_ec_list(open("%s/%s" % (cdir, common.FILE_EC_MAP)))
+    ec2r, r2ec = common.read_ec_list(open(ecfile))
 
     precalc_colors()
     message(VERBOSE_SOME, "Loading molecule names... ")
-    mol_names = parse_molecule_names("%s/kegg-compounds" % (common.AUX_DIR))
-#    mol_names = parse_molecule_names("%s/%s/kegg-compounds" % (cdir,common.AUX_DIR))
+    #  dictionary where keys are mol ids (C00001) and
+    # items are names from second column of kegg-compounds file
+    mol_names = common.parse_molecule_names(cnamefile)
 
     message(VERBOSE_SOME, "Loaded %d molecules." % (len(mol_names)))
     message(VERBOSE_SOME, "Loading atom maps... ")
     amp = atommap.AtomMappingParser()
+    amp.readBoundaries(bfile)
     #accepted_atom_types = set(["C"])
     accepted_atom_types = set(DEFAULT_ATOM_TYPES)
     skip_atom_types = None
@@ -1457,6 +1493,7 @@ def main(cdir, kdir, adir, sourcesfn, ubiqfn, scoresfn, threshold, path_reject_t
     message(VERBOSE_SOME, "Loaded %d reactions in total." % (len(amp.reactions)))
     message(VERBOSE_SOME, "Loading source metabolites... ")
     sources = common.read_set(open(sourcesfn))
+    #print sources	
     message(VERBOSE_SOME, "Loaded %d sources." % (len(sources)))
     message(VERBOSE_SOME, "Loading ubiquituous metabolites... ")
     ubiqs = common.read_set(open(ubiqfn))
@@ -1473,18 +1510,21 @@ def main(cdir, kdir, adir, sourcesfn, ubiqfn, scoresfn, threshold, path_reject_t
     gapless(amp, net, sources, ubiqs, scores, mol_names, threshold, path_reject_threshold, odir, ecscores, r2ec, cdir, target_reactions)
 
 if __name__ == "__main__":
-    kdir = sys.argv[1]       # KEGG LIGAND dir
-    adir = sys.argv[2]       # dir with atom maps
-    sourcesfn = sys.argv[3]  # list of source metabolites
-    ubiqfn = sys.argv[4]     # list of ubiquituous metabolites 
-    scoresfn = sys.argv[5]   # reaction scores
-    threshold = float(sys.argv[6])
-    path_reject_threshold = float(sys.argv[7])
-    odir = sys.argv[8]       # output dir
-    if len(sys.argv) > 9:
-        target_reactions = set(sys.argv[9].split(","))
+    bfile = sys.argv[1]	     # bounds file	
+    kdir = sys.argv[2]       # KEGG LIGAND dir
+    adir = sys.argv[3]       # dir with atom maps
+    sourcesfn = sys.argv[4]  # list of source metabolites
+    ubiqfn = sys.argv[5]     # list of ubiquituous metabolites 
+    scoresfn = sys.argv[6]   # reaction scores
+    threshold = float(sys.argv[7])
+    path_reject_threshold = float(sys.argv[8])
+    odir = sys.argv[9]       # output dir
+    cnamefile = sys.argv[10]     # list of ubiquituous metabolites 
+    ecfile = sys.argv[11]
+    if len(sys.argv) > 12:
+        target_reactions = set(sys.argv[12].split(","))
     else:
         target_reactions = None
 
     cdir = "."
-    main(cdir, kdir, adir, sourcesfn, ubiqfn, scoresfn, threshold, path_reject_threshold, odir, target_reactions)
+    main(bfile, cdir, kdir, adir, sourcesfn, ubiqfn, scoresfn, threshold, path_reject_threshold, odir, cnamefile, ecfile, target_reactions)

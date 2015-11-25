@@ -2,6 +2,13 @@
 
 import sys
 
+class Bounds:
+    def __init__(self):
+	self.name = 'bounds'
+	self.lb = '-1000'
+	self.ub = '1000'
+
+
 class Reaction:
     """Metabolic reaction represented as an atom mapping.
 
@@ -9,6 +16,7 @@ An atom mapping is a many-to-many mapping of source atoms to target atoms. React
 
     def __init__(self, id, subs, pros, sub_coeff, pro_coeff, maps, rev_maps = None, spontaneous = False):
         self.id = id
+	self.bound = "bi"
         self.substrates = set(subs)
         self.products = set(pros)
         self.sub_coeff = sub_coeff.copy()
@@ -21,15 +29,24 @@ An atom mapping is a many-to-many mapping of source atoms to target atoms. React
         else:
             self.rev_maps = rev_maps
 
+    def set_bounds(self,bound):	
+	self.bound = bound            
+	
     def basename(self):
         return self.id.split("_", 1)[0]
+
+    def getId(self):
+        return self.id
 
     def reverse(self):
         """Return a copy of the reaction reversed."""
         rid = "%s_rev" % (self.id)
-        return Reaction(rid, self.products, self.substrates, self.pro_coeff, self.sub_coeff, self.reverse_maps(self.maps), self.maps)
+	if self.bound and "fwd" in self.bound:	    
+	    return Reaction(rid, self.products, self.substrates, self.pro_coeff, self.sub_coeff, self.maps, self.reverse_maps(self.maps))	
+	else:        
+	    return Reaction(rid, self.products, self.substrates, self.pro_coeff, self.sub_coeff, self.reverse_maps(self.maps), self.maps)
 
-    def reverse_maps(self, maps):
+    def reverse_maps(self, maps):	
         rmaps = {}
         for u in maps:
             for v in maps[u]:
@@ -104,10 +121,14 @@ An atom mapping is a many-to-many mapping of source atoms to target atoms. React
     def __repr__(self):
         return "%s(%d,%d,%d)" % (self.id, len(self.substrates), len(self.products), len(self.maps))
 
-class AtomMappingParser:
-    """A parser for the CSBB atom mapping format."""
 
+
+class AtomMappingParser:
+    """A parser for the CSBB atom mapping format.""" 
+    B = []
+    
     def __init__(self):
+	self.B = []
         self.reactions = {}
         self.base_reactions = {}
         self.atom_index = {}        # "mol-atom" -> atom_index
@@ -117,7 +138,32 @@ class AtomMappingParser:
         self.accepted_atom_types = None
         self.next_atom_index = 1
         self.spontaneous_reactions = set()   # base_reaction -> boolean
+	
+    def readBoundaries(self, path): 
+        f = open(path)   
+        for s in f: 
+	    name, idreaction, model, lb, ub = s.strip().split("\t") 	   
+	    bo = Bounds()
+	    bo.name = name
+	    bo.lb = lb
+	    bo.ub = ub	   
+	    self.B.append(bo)
+        f.close()
+	
+    def searchBound(self, name):
+    	bound = self.B[1]	
+   	for b in self.B:
+	    if name in b.name:
+	        bound = b	
+                break	
+        return bound 
 
+    def get_bounds(self,lb,ub):	
+	if '1000' in ub and '-1000' in lb:	    
+	     return "bi" 
+	elif '1000' in ub:	     
+             return "fwd"	     
+   	
     def delete_reactions(self, R):
         for r in R:
             if r in self.base_reactions:
@@ -234,12 +280,19 @@ class AtomMappingParser:
         key, time = f.readline().strip().split(None, 1)
         if key != "TIME":
             raise Exception("Parse error: expecting 'TIME', got '%s'" % (key))
-
+	
+	bound = self.searchBound(rid)
+	
         lhs, rhs = indices.split("=>")
-        lhs, rhs = lhs.split("+"), rhs.split("+")
-
+        lhs, rhs = lhs.split("+"), rhs.split("+")	
         leq, req = eq.split("=>")
         leq, req = leq.split("+"), req.split("+")
+	if bound.lb is '-1000' and bound.ub is '0':        
+		rhs, lhs = indices.split("=>")
+        	rhs, lhs = lhs.split("+"), rhs.split("+")	
+        	req, leq = eq.split("=>")
+        	req, leq = leq.split("+"), req.split("+")		
+
         index2mol = {}
         subs = set()
         pros = set()
@@ -268,24 +321,30 @@ class AtomMappingParser:
             else:
                 pro_coeff[mol] += 1
             index2mol[index] = mol
-
         f.readline()
-
         maps = self.parse_mapping_and_reaction_graph(f, index2mol, duplicate_reactants)
         reactions = []
         mapkeys = maps.keys()
         mapkeys.sort()
         #for m in mapkeys[0:1]:
         for m in mapkeys:
-            name = "%s_%s" % (rid, m)
-            re = Reaction(name, subs, pros, sub_coeff, pro_coeff, maps[m])
-            reactions.append(re)
+            name = "%s_%s" % (rid.replace("_","#"), m)	
+ 
+	    bound = self.searchBound(rid)
+	    re = Reaction(name, subs, pros, sub_coeff, pro_coeff, maps[m])
+	    #if reaction is reverse	    
+	    if bound.lb is '-1000' and bound.ub is '0':
+	        re.set_bounds("fwd") 	
+	    else: 	
+	    	re.set_bounds(self.get_bounds(bound.lb, bound.ub))
+	    reactions.append(re)
         return reactions
 
     def parse_reaction_dir(self, ddir, 
                            accepted_atom_types = set(["C"]), 
                            skip_atom_types = None):
-        import os
+        import os	
+
         fns = os.listdir(ddir)
         fns.sort()
         self.reactions = {}
@@ -301,6 +360,7 @@ class AtomMappingParser:
         global num_maps, num_pruned_maps
         num_maps = {}
         num_pruned_maps = {}
+
         for i, fn in enumerate(fns):
             f = open("%s/%s" % (ddir, fn))
             try:
@@ -310,28 +370,23 @@ class AtomMappingParser:
                 continue
 
             map_hashes = set()
-            for r in res:
+            for r in res:		
                 h = r.map_hash()
                 if h in map_hashes:
                     #print "Removing duplicate mapping", r.id
                     continue
                 map_hashes.add(h)
                 rev = r.reverse()
-                self.reactions[r.id] = r
-                self.reactions[rev.id] = rev
-                #print rev
-                #print "->", r.id
-                #print "->", rev.id
+
+                self.reactions[r.id] = r		
+                self.reactions[rev.id] = rev		
 
                 base = r.basename()
                 if base not in self.base_reactions:
-                    self.base_reactions[base] = []
-                self.base_reactions[base].append(r.id)
+                    self.base_reactions[base] = []		
+                self.base_reactions[base].append(r.id)		
                 self.base_reactions[base].append(rev.id)
-
-                #print r
-                #print self.atom_types
-
+		
             #if i == 1000000:
             #    print "atommap.py: BREAK"
             #    break
@@ -359,78 +414,97 @@ class AtomMappingParser:
     
         for s in f:
             if s.startswith("///"):
+		continue
                 #print "Entry (%s), eq (%s)" % (entry, eq)
-                if augment_only and entry in self.base_reactions:
+                #if augment_only and entry in self.base_reactions:
                     #print "Not adding %s" % (entry)
-                    continue
+                #    continue
                 #else:
                 #    print "%s" % (entry)
-
-                lhs, rhs = eq.split(" <=> ")
-                subs = set()
-                pros = set()
-                sub_coeff = {}
-                pro_coeff = {}
-                lhs, rhs = lhs.split(" + "), rhs.split(" + ")
-                for mol in lhs:
-                    vals = mol.split()
-                    if len(vals) == 2:
-                        coeff, mol = vals
-                    else:
-                        coeff, mol = 1, vals[0]
-                    subs.add(mol)
-                    sub_coeff[mol] = coeff
-                    if mol not in self.atom_types:
-                        self.atom_types[mol] = {}
-
-                for mol in rhs:
-                    vals = mol.split()
-                    if len(vals) == 2:
-                        coeff, mol = vals
-                    else:
-                        coeff, mol = 1, vals[0]
-                    pros.add(mol)
-                    pro_coeff[mol] = coeff
-                    if mol not in self.atom_types:
-                        self.atom_types[mol] = {}
-
-                maps = {}
-
-                name = "%s_0" % (entry)
-
-                re = Reaction(name, subs, pros, sub_coeff, pro_coeff, maps, spontaneous = spontaneous)
-                rev = re.reverse()
-
-                self.reactions[re.id] = re
-                self.reactions[rev.id] = rev
-                base = re.basename()
-                if base not in self.base_reactions:
-                    self.base_reactions[base] = []
-                self.base_reactions[base].append(re.id)
-                self.base_reactions[base].append(rev.id)
-
-                block_eq = 0
-                spontaneous = False
-                continue
-            key, value = s[0:12].strip(), s[12:].strip()
+	    key, value = s[0:12].strip(), s[12:].strip()
             if key == "ENTRY":
                 entry = value.split()[0]
+		continue	
             elif key == "EQUATION":
                 block_eq = 1
                 eq = value
+		continue
             elif key == "COMMENT":
                 if "spontaneous" in value or "non enzymatic" in value or "Non-enzymatic" in value or "non-enzymatic" in value:
-                    self.spontaneous_reactions.add(entry)
-                    spontaneous = True
-            elif key != "":
+                    self.spontaneous_reactions.add(entry.replace("_","#"))
+                    spontaneous = True		
+	        continue
+           # elif key != "":
+           #     block_eq = 0	
+           # elif block_eq:
+           #     eq += " " + value
+	    elif key == "ENZYME":
+            	lhs, rhs = eq.split(" <=> ")
+            	subs = set()
+            	pros = set()
+            	sub_coeff = {}
+            	pro_coeff = {}
+            	lhs, rhs = lhs.split(" + "), rhs.split(" + ")
+            	for mol in lhs:
+              	     vals = mol.split()
+              	     if len(vals) == 2:
+              	      	 coeff, mol = vals
+              	     else:
+             	         coeff, mol = 1, vals[0]
+             	     subs.add(mol)
+             	     sub_coeff[mol] = coeff
+            	     if mol not in self.atom_types:
+              	         self.atom_types[mol] = {}
+
+           	for mol in rhs:
+                     vals = mol.split()
+                     if len(vals) == 2:
+                         coeff, mol = vals
+                     else:
+                         coeff, mol = 1, vals[0]
+                     pros.add(mol)
+                     pro_coeff[mol] = coeff
+                     if mol not in self.atom_types:
+                         self.atom_types[mol] = {}
+
+                maps = {}
+
+                name = "%s_0" % (entry.replace("_","#"))	
+
+
+		bound = self.searchBound(entry)
+	        re = {}
+	    	#if reaction is reverse	    
+	        if bound.lb is '-1000' and bound.ub is '0':        
+	    	     re = Reaction(name, pros, subs, pro_coeff, sub_coeff, maps, spontaneous = spontaneous)
+	             re.set_bounds("fwd") 
+	        else:
+            	     re = Reaction(name, subs, pros, sub_coeff, pro_coeff, maps, spontaneous = spontaneous)		     
+	    	     re.set_bounds(self.get_bounds(bound.lb, bound.ub))
+                
+                rev = re.reverse()
+		
+		
+                self.reactions[re.id] = re		
+                self.reactions[rev.id] = rev
+		
+		
+                base = re.basename()
+                if base not in self.base_reactions:
+                    self.base_reactions[base] = []
+               
+                self.base_reactions[base].append(re.id)		
+                self.base_reactions[base].append(rev.id)
+		
                 block_eq = 0
-            elif block_eq:
-                eq += " " + value
+                spontaneous = False
+                
+            
 
 if __name__ == "__main__":
     import sys
     #f = open(sys.argv[1])
-    #parse_reaction(f)
+    #parse_reaction(f)     
     amp = AtomMappingParser()
     amp.parse_reaction_dir(sys.argv[1])
     amp.parse_ligand_reaction(sys.argv[2])

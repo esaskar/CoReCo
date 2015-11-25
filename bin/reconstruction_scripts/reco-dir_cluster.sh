@@ -1,5 +1,13 @@
-#!/bin/bash
-# 
+#$ -S /bin/bash
+#$ -N VTTCLusterNetworkReconstruction
+#$ -j y
+#$ -cwd
+#$ -R y
+#$ -q all.q@compute-0-6
+
+
+##  export PATH=/home/fsfahad/coreco/bin/model_training_scripts/:/share/apps/local/lib64/python2.6/site-packages/:$PATH
+
 # $1  data dir 
 # $2  param-accept
 # $3  param-reject
@@ -7,6 +15,7 @@
 # $5  label-outputdir-with-params
 # $8  bound file
 # $9  exchange file
+
 
 if [ -z "$1" ]; then
    echo "Specify data dir";
@@ -55,7 +64,6 @@ if [ -z "$9" ]; then
    exit;
 fi
 
-
 #This need to be specified to your working dir
 CDIR=$5
 
@@ -68,9 +76,9 @@ EQN=$KDIR/nooxygen.eqn
 ERRORDIR=$1/reco-logs/
 mkdir -p $ERRORDIR
 
-
-#    ODIR_PARAM_LABELED=no;
+#ODIR_PARAM_LABELED=no;
 ODIR_PARAM_LABELED=yes;
+
 
 #REMOVE_PARTIAL_EC=no
 REMOVE_PARTIAL_EC=yes    # remove partial EC numbers from reaction scores
@@ -81,4 +89,5 @@ python $CDIR/reco-dir.py $8 $Kegg $KDIR $1 $2 $3 $9 $4 $ODIR_PARAM_LABELED $REMO
 
 
 [ $? -ne 0 ] && echo reco-dir.py failed && exit $?
+
 

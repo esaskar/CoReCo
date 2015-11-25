@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+import os
 import sys
+import re
 
 #sys.path.append("/usr/local/lib/")
 
@@ -11,13 +13,15 @@ import common
 
 SUM_STOIC_COEFFS = 1  # sum coefficients of both sides: 2A + 2B <=> 3A + 1C ---> 2B <=> 1A + 1C
 
-SBML_LEVEL = 2
-SBML_VERSION = 4
+SBML_LEVEL = 3
+SBML_VERSION = 1
+#SBML_LEVEL = 2
+#SBML_VERSION = 4
 
 NOTES = """
 <body xmlns="http://www.w3.org/1999/xhtml">
 <p>
-This model was reconstructed with CoReCo method from protein sequence and phylogeny data. CoReCo is described in the manuscript "Comparative genome-scale reconstruction of gapless metabolic networks for present and ancestral species" (submitted) by Esa Pitkanen, Paula Jouhten, Peter Blomberg, Liisa Holm, Merja Penttila, Juho Rousu and Mikko Arvas.
+This model was reconstructed with CoReCo method from protein sequence and phylogeny data. CoReCo is described in Pitkanen, E., Jouhten, P., Hou, J., Syed, M. F., Blomberg, P., Kludas, J., Oja, M., Holm, L., Penttila, M., Rousu, J. and Arvas, M. (2014). Comparative Genome-Scale Reconstruction of Gapless Metabolic Networks for Present and Ancestral Species. PLoS Computational Biology, 10(2), e1003465. doi:10.1371/journal.pcbi.1003465.
 
 CoReCo annotates each reaction with the following attributes: 
 <ul>
@@ -76,11 +80,13 @@ ANNOTATION = """
 
 def get_reaction_id(r):
     """R00001_1_rev -> R00001"""
-    return r.split("_")[0]
+    return r.split("_")[0].replace("#","_")
+#    return r.split("_")[0]
 
-def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species):
+def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, rxnnames=None, pathways=None, pathwayasnames=None):
 
     DEFAULT_COMPARTMENT = "cytosol"
+    reKEGGRID = re.compile("R\d\d\d\d\d")
 
     d = libsbml.SBMLDocument(SBML_LEVEL, SBML_VERSION)
 
@@ -109,9 +115,10 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species):
     comp = m.createCompartment()
     comp.setId(DEFAULT_COMPARTMENT)
     #comp.setCompartmentType()
-    comp.setConstant(True) # Sets the value of the 'constant' attribute of this Compartment.
+    comp.setConstant(False) # Sets the value of the 'constant' attribute of this Compartment.
     comp.setName(DEFAULT_COMPARTMENT)
     #comp.setOutside() # sid the identifier of a compartment that encloses this one.
+    comp.setSBOTerm("SBO:0000290")
     comp.setSize(1)
     comp.setAnnotation("""
 <rdf:RDF>
@@ -128,7 +135,7 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species):
     reactions = set()
     rid2re = {}
     for r in reco:
-        rid = get_reaction_id(r)
+        rid = get_reaction_id(r)	
         if not rid in eqns:
             print "Warning: %s not in balanced equations" % (rid)
             continue
@@ -152,40 +159,49 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species):
             name = mol
 
 #      <speciesType metaid="metaid_t_0001" id="t_0001" name="(1-&gt;3)-beta-D-glucan" sboTerm="SBO:0000247">
-        st = m.createSpeciesType()
+        st = m.createSpecies()
         metaId = "meta_%s" % (mol)
-        st.setId(metaId)
+        st.setId(mol)
         st.setMetaId(metaId)
-        st.setName(name)
-        st.appendNotes("SBO:0000247")
-# CHEBI goes into Bag: <rdf:li rdf:resource="http://identifiers.org/obo.chebi/CHEBI:36464"/>
-        st.setAnnotation("""
-         <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
-           <rdf:Description rdf:about="#%s">
-             <bqbiol:is>
-               <rdf:Bag>
-                 <rdf:li rdf:resource="http://identifiers.org/obo.chebi/CHEBI:37671" />  <rdf:li rdf:resource="http://identifiers.org/kegg.compound/%s" />
-               </rdf:Bag>
-             </bqbiol:is>
-           </rdf:Description>
-         </rdf:RDF>
-""" % (metaId, mol))
+        st.setSBOTerm("SBO:0000247")
+        st.setName("%s [%s]" % (name, DEFAULT_COMPARTMENT))
+	st.setInitialConcentration(0)
+	st.setInitialAmount(0)
+	st.setBoundaryCondition(False)
+	st.setHasOnlySubstanceUnits(False)
+	st.setConstant(True)
+	st.setCompartment(DEFAULT_COMPARTMENT)
 
-# <speciesType metaid="meta_t_0001" sboTerm="SBO:0000247" id="t_0001" name="(1->3)-beta-D-glucan"> - <annotation> - <rdf:RDF> - <rdf:Description rdf:about="#meta_t_0001"> - <bqbiol:is> - <rdf:Bag>
-#  <rdf:li rdf:resource="http://identifiers.org/obo.chebi/CHEBI:37671" />  <rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00965" />  </rdf:Bag>
-#  </bqbiol:is>
-#  </rdf:Description>
-#  </rdf:RDF>
-#  </annotation>
-#  </speciesType>
-
-
-#      <species id="s_0001" name="(1-&gt;3)-beta-D-glucan [cell envelope]" speciesType="t_0001" compartment="c_01"/>
-        sp = m.createSpecies()
-        sp.setCompartment(DEFAULT_COMPARTMENT)
-        sp.setId(mol)
-        sp.setSpeciesType(metaId)
-        sp.setName("%s [%s]" % (name, DEFAULT_COMPARTMENT))
+        if mol.find("CHEBI") > -1:
+            
+            chebiNO= mol[5:]
+    # CHEBI goes into Bag: <rdf:li rdf:resource="http://identifiers.org/obo.chebi/CHEBI:36464"/>
+            st.setAnnotation("""
+             <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+               <rdf:Description rdf:about="#%s">
+                 <bqbiol:is>
+                   <rdf:Bag>
+                     <rdf:li rdf:resource="http://identifiers.org/obo.chebi/CHEBI:%s"/> 
+                   </rdf:Bag>
+                 </bqbiol:is>
+               </rdf:Description>
+             </rdf:RDF>
+    """ % (metaId, chebiNO))
+        
+	elif mol.find("Cluster") > -1:
+    		print ("No link created for metabolite: %s" % mol)
+        else:
+            st.setAnnotation("""
+             <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+               <rdf:Description rdf:about="#%s">
+                 <bqbiol:is>
+                   <rdf:Bag>
+                     <rdf:li rdf:resource="http://identifiers.org/kegg.compound/%s" />
+                   </rdf:Bag>
+                 </bqbiol:is>
+               </rdf:Description>
+             </rdf:RDF>
+    """ % (metaId, mol))        
         
     for rid in reactions:
         rec = reco[rid2re[rid]]
@@ -197,13 +213,15 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species):
         if SUM_STOIC_COEFFS == False:
             r = m.createReaction()
             for mol, qty in lhs:
-                re = r.createReactant()
-                re.setSpecies(mol)
-                re.setStoichiometry(qty)
+                rea = r.createReactant()
+                rea.setSpecies(mol)
+                rea.setStoichiometry(qty)
+		rea.setConstant(True)
             for mol, qty in rhs:
-                re = r.createProduct()
-                re.setSpecies(mol)
-                re.setStoichiometry(qty)
+                rea = r.createProduct()
+                rea.setSpecies(mol)
+                rea.setStoichiometry(qty)
+		rea.setConstant(True)		
             create = 1
         else:
 
@@ -222,30 +240,73 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species):
             for mol in total:
                 qty = total[mol]
                 if qty < 0:
-                    if r == None:
+                    if r is None:
                         r = m.createReaction()
-                    re = r.createReactant()
-                    re.setSpecies(mol)
-                    re.setStoichiometry(-qty)
+                    rea = r.createReactant()
+                    rea.setSpecies(mol)
+                    rea.setStoichiometry(-qty)
+		    rea.setConstant(True)		
                     create = 1
                 elif qty > 0:
-                    if r == None:
+                    if r is None:
                         r = m.createReaction()
-                    re = r.createProduct()
-                    re.setSpecies(mol)
-                    re.setStoichiometry(qty)
+                    rea = r.createProduct()
+                    rea.setSpecies(mol)
+                    rea.setStoichiometry(qty)
+		    rea.setConstant(True)	
                     create = 1
                 else:
                     pass # coeff sum zero -> leave this metabolite out of the model
 
         if create == 0:
             continue
+	
+        sbmlrid=rid.replace("-","")
+        r.setId(str(sbmlrid))
+        parts = rid.split("-")
+        keggrid = parts[len(parts)-1]
+        if not reKEGGRID.match(keggrid):
+            keggrid = None
 
-        r.setId(rid)
+	if not r.isSetId():
+            ridfix = rid.replace("-","")
+            ridfix = "N"+ridfix
+            r.setId(str(ridfix))
+            print ("Adding N to reaction name: %s -> %s" % (rid,ridfix))
         r.setCompartment(DEFAULT_COMPARTMENT)
         r.setReversible(True)
-        r.setMetaId("meta_%s" % (rid))
-        r.appendNotes("SBO:0000176")
+        r.setMetaId("meta_%s" % (rid))	
+        r.setSBOTerm("SBO:0000176")
+	r.setFast(False)
+        if rxnnames is not None:
+            if rid in rxnnames:
+                rn=rxnnames[rid]
+                rn=rn.replace("<i>","")
+                rn=rn.replace("</i>","")
+                rn=rn.replace("<I>","")
+                rn=rn.replace("</I>","")
+                rn=rn.replace("<sup>","^")
+                rn=rn.replace("</sup>","")
+                rn=rn.replace("<sub>","_")
+                rn=rn.replace("</sub>","")
+                rn=rn.replace("<SUP>","^")
+                rn=rn.replace("</SUP>","")
+                rn=rn.replace("<SUB>","_")
+                rn=rn.replace("</SUB>","")
+                rn=rn.replace("<em>","")
+                rn=rn.replace("</em>","")
+                rn=rn.replace("<small>","_")
+                rn=rn.replace("</small>","")
+                rn=rn.replace("&alpha;","alpha")
+                rn=rn.replace("&beta;","beta")
+                rn=rn.replace("&gamma;","gamma")
+                rn=rn.replace("&Delta;","Delta")
+                rn=rn.replace("&omega;","omega")
+                r.setName(rn)
+            else:
+                print ("rid: %s not found in rxnnames" % rid) 
+                r.setName("")
+        
 
 # <reaction metaid="meta_r_0001" sboTerm="SBO:0000176" id="r_0001" name="(R)-lactate:ferricytochrome-c 2-oxidoreductase"> - <notes> - <body xmlns="http://www.w3.org/1999/xhtml">
 #  <p>GENE_ASSOCIATION:((YDL174C and YEL039C) or (YDL174C and YJR048W) or (YEL039C and YEL071W) or (YEL071W and YJR048W))</p>
@@ -265,27 +326,65 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species):
 
         #kl = libsbml.KineticLaw(SBML_LEVEL, SBML_VERSION)
         #r.setKineticLaw(kl)
-        kl = r.createKineticLaw()
+        #kl = r.createKineticLaw()
 
-        ast = libsbml.ASTNode()
-        ast.setName("dummy")
-        kl.setMath(ast)
+        #ast = libsbml.ASTNode()
+        #ast.setName("dummy")
+        #kl.setMath(ast)
 
-        para = kl.createParameter()
-        para.setId("dummy")
-        para.setValue(1)
-        para.setUnits("time")
+        #para = kl.createParameter()
+        #para.setId("dummy")
+        #para.setValue(1)
+        #para.setUnits("time")
 
         annotation = """
-<rdf:RDF>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" xmlns:bqmodel="http://biomodels.net/model-qualifiers/">
+"""
+        if keggrid:
+            annotation += """
 <rdf:Description rdf:about="#%s">
 <bqbiol:is>
 <rdf:Bag>
 <rdf:li rdf:resource="http://identifiers.org/kegg.reaction/%s" />  
 </rdf:Bag>
 </bqbiol:is>
+""" % ("meta_%s" % (rid), keggrid)
+            if pathways is not None:
+                if keggrid in pathways:
+                    paths = pathways[keggrid].split(",")
+                    annotation += """
+<bqbiol:isVersionOf>
+  <rdf:Bag>
+"""
+                    for p in paths:
+                        annotation += """
+     <rdf:li rdf:resource="http://identifiers.org/kegg.pathway/%s"/>
+""" % p
+                    
+                    annotation += """
+  </rdf:Bag>
+</bqbiol:isVersionOf>
+"""
+                    if pathwayasnames is not None:
+                        pathns = pathwayasnames[keggrid].split(",")
+                        note = """
+<notes>
+  <body xmlns="http://www.w3.org/1999/xhtml">
+"""
+                        for p in pathns:
+                            note += """
+     <p>Pathway: %s</p>
+""" % p
+                        note += """
+  </body>
+</notes>
+"""                     
+                        r.setNotes(note)
+
+###
+            annotation += """
 </rdf:Description>
-""" % ("meta_%s" % (rid), rid)
+""" 
 
         annotation += """
 <coreco:ec>%s</coreco:ec>
@@ -323,8 +422,6 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species):
 
     return d
 
-import re
-
 def convert_eqn_side(side):
     new = []
     for mol in side:
@@ -336,7 +433,10 @@ def convert_eqn_side(side):
             except ValueError:
                 coeff = float("NaN")
         else:
-            mol = re.findall("\w\d{5}", vals[0])[0]
+            ##mol = re.findall("\w\d{5}", vals[0])[0]
+            mol = vals[0].strip()
+           # print vals[0] + "......" + mol
+
             #mol = vals[0]
             coeff = 1
         new.append((mol, coeff))
@@ -359,19 +459,44 @@ def read_balanced_reactions(f):
             reactions[rid] = (isbalanced, ostatus, nstatus, eqn)
     return reactions
 
-def main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn):
-    mol2name = {}
-    f = open(molfn)
-    for s in f:
-        molid, name, name2 = s.strip().split("\t")
-        mol2name[molid] = name
+def main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, rxnnamefile=None, pathwayfile=None):
+    print("Loading molecule names... ")
+    # dictionary where keys are mol ids (C00001) and
+    # items are names from second column of kegg-compounds file
+    mol2name = common.parse_molecule_names(molfn)
     print "Loading reconstruction: %s/%s" % (rdir, common.NETWORK_REACTION_FILE)
     f = open("%s/%s" % (rdir, common.NETWORK_REACTION_FILE))
     bf = open(eqnfn)
     reco = common.read_reconstruction(f)
     eqns = read_balanced_reactions(bf)
-    print "%d reactions" % (len(reco))
-    sbml = convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species)
+    if pathwayfile is not None:
+        fp = open(pathwayfile)
+        pathways={};
+        pathwayasnames={};
+        for s in fp: 
+            #print s
+            sisalto = s.strip().split("\t") 
+            #print len(sisalto)
+            if len(sisalto)>1:
+                pathways[sisalto[0]]=sisalto[1]
+            if len(sisalto)>2:
+                pathwayasnames[sisalto[0]]=sisalto[2]
+        if len(pathwayasnames) == 0:
+            pathwayasnames = None
+    else:
+        pathways = None
+    if rxnnamefile is not None:
+        fp = open(rxnnamefile)
+        rxnnames={};
+        for s in fp: 
+            sisalto = s.strip().split("\t") 
+            if len(sisalto)>1:
+                rxnnames[sisalto[0]]=sisalto[1]
+                #print ("rxnnames[%s] = %s" % (sisalto[0],sisalto[1]))
+    else:
+        rxnnames = None
+  #  print "%d reactions" % (len(reco))
+    sbml = convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, rxnnames, pathways, pathwayasnames)
     libsbml.writeSBMLToFile(sbml, outfn)
 
 if __name__ == "__main__":
@@ -383,4 +508,16 @@ if __name__ == "__main__":
     modelname = sys.argv[6]
     species = sys.argv[7]
     outfn = sys.argv[8] # sbml output
-    main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn)
+    pathwayfile = None
+    rxnnamefile = None
+    if len(sys.argv) > 9:
+        if(os.path.isfile(sys.argv[9])):
+            print "Reading reaction paths"
+            rxnnamefile=sys.argv[9]
+    if len(sys.argv) > 10:
+        if(os.path.isfile(sys.argv[10])):
+            print "Reading reaction paths"
+            pathwayfile=sys.argv[10]
+
+    main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, rxnnamefile, pathwayfile)
+

@@ -9,7 +9,8 @@ import common
 
 def base(s):
     """Return reaction basename"""
-    return s.split("_")[0]
+    return s.split("_")[0].replace("#","_")
+#    return s.split("_")[0]
 
 def convert(reco, of):
     ec2reco = {}

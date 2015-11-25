@@ -31,19 +31,22 @@ class AtomGraph:
         for r in reactions:
             self.add_reaction_edges(reactions[r], cost_fun(r))
 
-    def add_reaction_edges(self, re, cost):
+    def add_reaction_edges(self, re, cost):	
         for sa in re.maps:
             for ta in re.maps[sa]:
-                self.add_edge(sa, ta, cost, [re.id])
+		 self.add_edge(sa, ta, cost, [re.id])
+		
 
     def delete_reaction_edges(self, re):
         for sa in re.maps:
             for ta in re.maps[sa]:
                 assert(re.id in self.edge_reactions[sa][ta])
-                self.edge_reactions[sa][ta].remove(re.id)
+		self.edge_reactions[sa][ta].remove(re.id)
                 if len(self.edge_reactions[sa][ta]) == 0:
-                    del self.E[sa][ta]
-                    del self.Erev[ta][sa]
+                     del self.E[sa][ta]
+                     del self.Erev[ta][sa]
+		
+
 
     def scale_edge_weights(self, amp):
         """Scale edge weights w' = w/x where x is the fraction of source atoms transferred to target."""
@@ -82,15 +85,15 @@ class AtomGraph:
 
     def add_edge(self, u, v, cost, edge_res):
         """Add edge (u, v) to graph and update cost if the new cost is lower than previous, or the edge is new."""
-        if u not in self.E:
+	if u not in self.E:
             self.E[u] = {}
             self.edge_reactions[u] = {}
-        if v not in self.E[u] or self.E[u][v] > cost:
+	if v not in self.E[u] or self.E[u][v] > cost:
             self.E[u][v] = cost
-        if v not in self.edge_reactions[u]:
+	if v not in self.edge_reactions[u]:
             self.edge_reactions[u][v] = set()
         self.edge_reactions[u][v].update(edge_res)
-        if v not in self.Erev:
+	if v not in self.Erev:
             self.Erev[v] = {}
         if u not in self.Erev[v] or self.Erev[v][u] > cost:
             self.Erev[v][u] = cost
@@ -132,8 +135,8 @@ def test():
     ag.add_edge("n3", "n5", ["r1"])
     #ag.delete_edge("n2", "n3")
     ag.delete_node("n2")
-    print ag
-    print ag.Grev
+    #print ag
+    #print ag.Grev
 
 if __name__ == "__main__":
     test()
