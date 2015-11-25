@@ -26,6 +26,14 @@ uniprot_sprot_dat = NGS_Util.createFilePath(projectDataDir, "Uniprot_EC_GO_Data/
 
 uniprot_dust     = NGS_Util.createFilePath(orgBlastDustDir, "uniprot_dust.asnb")
 uniprot_blast_db = NGS_Util.createFilePath(orgBlastDBDir, "uniprot")
+
+##########################################################################################     Reactions  ##########################################################################################
+
+keggDataDir		= NGS_Util.createFilePath(projectDataDir, "Kegg")  
+keggAtomMapsDataDir     = NGS_Util.createDirectoryPath(keggDataDir, "kegg-no-general/atommaps") 
+gene2eclist         	= NGS_Util.createFilePath(keggDataDir, "newreactions/gene2eclist.txt") 
+ec2rxnFile         	= NGS_Util.createFilePath(keggDataDir,"aux/ec-list.txt") 
+
 ##########################################################################################     EC Go Data Files   ##########################################################################################
 
 ec_files          = NGS_Util.createFilePath(projectDataDir, "Uniprot_EC_GO_Data/ec_files.txt")
@@ -34,7 +42,7 @@ ec2go             = NGS_Util.createFilePath(projectDataDir, "Uniprot_EC_GO_Data/
 ##########################################################################################     Sequence Data      ##########################################################################################
 
 orgListFile       = NGS_Util.createFilePath(projectDataDir, "org_list")
-orgFastaDir       = NGS_Util.createDirectoryPath(projectDataDir, "org_sequence_db")      #"50fungi+newPichia_fasta_seq")      
+orgFastaDir       = NGS_Util.createDirectoryPath(projectDataDir, "org_sequence_db")     
 seq_org_list      = NGS_Util.createFilePath(projectDataDir, "seq_org_list.txt")
 
 taxonomy          = NGS_Util.createFilePath(projectDataDir, "taxonomy")
@@ -48,6 +56,8 @@ nrdb40_dust     = NGS_Util.createFilePath(orgBlastDustDir, "nrdb40_dust.asnb")
 nrdb40_blast_db = NGS_Util.createFilePath(orgBlastDBDir, "nrdb40")
 
 ##########################################################################################     Sequence Blast Output  ######################################################################################
+blastEValue   	  = 10
+uniprotDBSize     = 191456931
 
 orgBlastResDir    = NGS_Util.createDirectoryPath(projectResultDir, "blast_results")
 jointBlastDir     = NGS_Util.createDirectoryPath(projectResultDir, "blast_joint_results") 
@@ -76,7 +86,6 @@ NGS_Util.createDirectory(InterProScan_EC_RAW_results)
 
 ##########################################################################################     Model Training Output  ######################################################################################
 
-#phylogeneticTreeFile = "/mnt/nfs/coreco_final_1/data/tree.txt"
 phylogeneticTreeFile = NGS_Util.createFilePath(projectDataDir, "tree.txt")
 
 
@@ -85,12 +94,14 @@ NGS_Util.createDirectory(modelTrainingDir)
 
 ##########################################################################################     Model Rencontruction  ######################################################################################
 
-
+exchangeReactionsPath	     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/exchangeReactions.txt")
+boundsPath		     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/harvestedbounds.txt")
+pathwayFile		     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/kegg-pathways")
 modelTrainingModelDir        = NGS_Util.createFilePath(modelTrainingDir,"Model")
-intAaccept                   = 0.02
+intAaccept                   = 0.3
 intReject                    = 2
-keggDataDir                  = NGS_Util.createFilePath(projectDataDir, "Kegg")  
 networkReconstructionOrgList = NGS_Util.createFilePath(projectDataDir, "network_reconstruction_org_list.txt") # 4 letter org name file
 
-keggAtomMapsDataDir          = NGS_Util.createDirectoryPath(projectDataDir, "Kegg/kegg-no-general/atommaps") 
+###########################################################################################################################################################################################################
 
+numberOfFragments = 10
