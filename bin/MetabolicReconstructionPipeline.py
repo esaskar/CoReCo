@@ -55,6 +55,7 @@ nids_up             = ProjectDir.nids_up
 seq_org_list        = ProjectDir.seq_org_list
 
 numberNearestHits = 50
+blastEValue	    = ProjectDir.blastEValue
 
 
 orgIPRScanDir               = ProjectDir.orgIPRScanDir
@@ -87,12 +88,13 @@ try:
 
 
     blast = MetabolicReconstructionPipeline_Blast.MetabolicReconstructionPipeline_Blast()
-    blast.initialize(uniprot_fasta, ec_files, uniprot_sprot_dat, uniprot_dust, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir, numberOfFragments)
-    blast.getBlastScore()
+    blast.initialize(uniprot_fasta_augmented, ec_files, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir, blastEValue, uniprotDBSize)
+    blast.numberOfFragments = numberOfFragments
+    blast.getBlastScore() 
 
 
     gtg = MetabolicReconstructionPipeline_GTG.MetabolicReconstructionPipeline_GTG()
-    gtg.initialize(nrdb40_fasta, nrdb40_dust, nrdb40_blast_db, ec_files, orgListFile, orgFastaDir,  orgBlastDBDir, orgBlastDustDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, CAA1Dir, nids_up, seq_org_list, numberNearestHits, orgGTGDatabaseDir)
+    gtg.initialize(nrdb40_blast_db, ec_files, orgListFile, orgFastaDir,  orgBlastDBDir, orgBlastDustDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, CAA1Dir, nids_up, seq_org_list, numberNearestHits, orgGTGDatabaseDir,blastEValue)	
     gtg.getGTGScore()
     
 

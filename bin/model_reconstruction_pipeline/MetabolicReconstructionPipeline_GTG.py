@@ -13,13 +13,12 @@ import NGS_Blast
 sys.path.append("..")
 import ScriptsDir
 
+
 sys.path.append(ScriptsDir.GTGScripts)
 
 class MetabolicReconstructionPipeline_GTG:
     
 
-    nrdb40_fasta     = "" #need to be initialized     
-    nrdb40_dust      = ""
     nrdb40_blast_db  = ""
     
     ec_files          = ""     #need to be initialized     
@@ -33,7 +32,7 @@ class MetabolicReconstructionPipeline_GTG:
     orgBlastDustDir   = ""  #Directory path for organisms DUST  files                #need to be initialized     
 
     
-    orgGTGDatabaseDir   = ""  #Directory to store blast outputs                        #need to be initialized     
+    orgGTGDatabaseDir   = ""  #Directory containing GTG input                        #need to be initialized     
     
     orgGTGBlastResDir   = ""  #Directory to store blast outputs                        #need to be initialized     
     GTGFungiBestHitsDir = ""  #Directory to store joint blast rectified outputs        #need to be initialized
@@ -47,15 +46,13 @@ class MetabolicReconstructionPipeline_GTG:
     
     numberNearestHits = 50
 
+    blastEValue       = 1e-10
 
 
-    def initialize(self, nrdb40_fasta, nrdb40_dust, nrdb40_blast_db, ec_files, orgListFile, orgFastaDir,  orgBlastDBDir, orgBlastDustDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, CAA1Dir, nids_up, seq_org_list, numberNearestHits, orgGTGDatabaseDir):
+    def initialize(self, nrdb40_blast_db, ec_files, orgListFile, orgFastaDir,  orgBlastDBDir, orgBlastDustDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, CAA1Dir, nids_up, seq_org_list, numberNearestHits, orgGTGDatabaseDir, blastEValue):
     
         try:
-	    self.nrdb40_fasta        = nrdb40_fasta
-	    self.nrdb40_dust         = nrdb40_dust
 	    self.nrdb40_blast_db     = nrdb40_blast_db
-	    
 	    
 	    self.ec_files            = ec_files
     
@@ -74,33 +71,12 @@ class MetabolicReconstructionPipeline_GTG:
 	    self.nids_up             = nids_up
 	    self.seq_org_list        = seq_org_list
 	    self.numberNearestHits   = numberNearestHits
+	    
+	    self.blastEValue         = blastEValue
     
         except Exception:
             print traceback.print_exc()
-    
-    
-    
-    def preprocessNrdb40DataFiles(self):
-    
-        try:
         
-            print "PreProcess nrdb40 Data Files"
-            
-#            self.nrdb40_dust     = NGS_Util.createFilePath(self.orgBlastDustDir, "nrdb40_dust.asnb")
-            
-#            self.nrdb40_blast_db = NGS_Util.createFilePath(self.orgBlastDBDir, "nrdb40")
-
-            if os.path.exists(self.nrdb40_fasta):
-            
-                if not os.path.exists(self.nrdb40_blast_db + ".phd") and not os.path.exists(self.nrdb40_blast_db + ".psq"):
-
-		    self.ngsBlast.makeProteinBlastDBFromDustFile(self.nrdb40_fasta, self.nrdb40_dust, self.nrdb40_blast_db)
-
-        except Exception:
-
-	    print traceback.print_exc()
-
-
     def blast_org_vs_nr40_blast_formatted_11(self, organismName):
     
         try:
@@ -111,7 +87,7 @@ class MetabolicReconstructionPipeline_GTG:
 
 	    org_vs_nr40BlastDB_f11 = NGS_Util.createFilePath(self.orgGTGBlastResDir, organismName + ".nrdb40_v2.txt")
 
-	    self.ngsBlast.blastP(self.nrdb40_blast_db, org_fasta,  11, org_vs_nr40BlastDB_f11, 10)
+	    self.ngsBlast.blastP(self.nrdb40_blast_db, org_fasta,  11, org_vs_nr40BlastDB_f11, self.blastEValue)
 	    
 	    return org_vs_nr40BlastDB_f11
 
@@ -260,8 +236,7 @@ class MetabolicReconstructionPipeline_GTG:
 	    
 	    org_gtg = NGS_Util.createFilePath(self.GTGBestHitsDir, organismName + ".gtg")
 	    
-	    #cut -f 3,6-7,13-16 $path_input/$org_name.final |time python $path_software/gtg_attributes_mod.py 1 $path_software>$path_result/$org_name.gtg
-            call = "cut -f 3,6-7,13-16 " + org_vs_nr40BlastDB_best_hit + " |time python " + ScriptsDir.GTGScripts_gtg_attributes_mod +  " 1 " + self.orgGTGDatabaseDir + " > " + org_gtg
+	    call = "cut -f 3,6-7,13-16 " + org_vs_nr40BlastDB_best_hit + " |time python " + ScriptsDir.GTGScripts_gtg_attributes_mod +  " 1 " + self.orgGTGDatabaseDir + " > " + org_gtg
 	    
 	    NGS_Util.executeCall(call)
 	    
@@ -325,8 +300,7 @@ class MetabolicReconstructionPipeline_GTG:
             orgListFile_fh = open(self.orgListFile)
 
             for line in orgListFile_fh:
-                if line.startswith("#"):
-                    continue
+                
                 organismNameID, organismName = line.strip().split()
                 
                 org_gtg_knn_final = NGS_Util.createFilePath(self.GTGKNNDir, organismNameID + ".gtg.knn")

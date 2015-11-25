@@ -9,6 +9,7 @@ import sys
 import traceback
 import NGS_Util
 import NGS_Blast
+import ProjectDir
 
 sys.path.append("..")
 import ScriptsDir
@@ -22,12 +23,9 @@ from buildBlastResult  import combineBlasts
 class MetabolicReconstructionPipeline_Blast:
 
     uniprot_fasta     = ""     #need to be initialized     
-    uniprot_dust      = ""
     uniprot_blast_db  = ""
 
     ec_files          = ""     #need to be initialized     
-
-    uniprot_sprot_dat = ""     #need to be initialized      
     
     ngsBlast          = NGS_Blast.NGS_Blast()
     
@@ -40,18 +38,19 @@ class MetabolicReconstructionPipeline_Blast:
     orgBlastResDir    = ""  #Directory to store blast outputs                        #need to be initialized     
     jointBlastDir     = ""  #Directory to store joint blast rectified outputs        #need to be initialized     
 
+    blastEValue       = ProjectDir.blastEValue
+    uniprotDBSize     = ProjectDir.uniprotDBSize
 
-    def initialize(self, uniprot_fasta, ec_files, uniprot_sprot_dat, uniprot_dust, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir):
+
+    def initialize(self, uniprot_fasta, ec_files, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir, blastEValue, uniprotDBSize):
     
         try:
         
             self.uniprot_fasta     = uniprot_fasta
-	    self.uniprot_dust      = uniprot_dust
 	    self.uniprot_blast_db  = uniprot_blast_db
 	            
             self.ec_files          = ec_files
         
-            self.uniprot_sprot_dat = uniprot_sprot_dat
             
             
             self.orgListFile       = orgListFile
@@ -62,47 +61,16 @@ class MetabolicReconstructionPipeline_Blast:
         
             self.orgBlastResDir    = orgBlastResDir
             self.jointBlastDir     = jointBlastDir
+	    
+	    self.blastEValue       = blastEValue
+	    self.uniprotDBSize     = uniprotDBSize
+	    
+	    
         
     
         except Exception:
             print traceback.print_exc()
     
-
-    
-
-    #def preprocessUniprotDataFiles(self):
-    #
-    #    try:
-    #    
-    #    ###########################################################
-    #        
-    #        print "PreProcess Uniprot Data Files"
-    #        
-    #        self.uniprot_dust     = NGS_Util.createFilePath(self.orgBlastDustDir, "uniprot_dust.asnb")
-    #        
-    #        self.uniprot_blast_db = NGS_Util.createFilePath(self.orgBlastDBDir, "uniprot")
-    #
-    #        if os.path.exists(self.uniprot_fasta):
-    #        
-    #            if not os.path.exists(self.uniprot_blast_db + ".phd") and not os.path.exists(self.uniprot_blast_db + ".psq"):
-    #
-    #            
-    #                self.ngsBlast.makeProteinBlastDBFromDustFile(self.uniprot_fasta,self.uniprot_dust,self.uniprot_blast_db)
-    #        
-    #    ###########################################################
-    #    
-    #        if not os.path.exists( self.ec_files ) and os.path.exists(self.uniprot_sprot_dat):
-    #
-    #            call = "python " + ScriptsDir.BlastScripts_getEcs + " " + self.uniprot_sprot_dat+ " " + self.ec_files +": AC, ID, EC"
-    #        
-    #            NGS_Util.executeCall(call)
-    #    
-    #
-    #    except Exception:
-    #        print traceback.print_exc()
-    #
-
-
 
     def makeBlastDB(self, organismName):
     
@@ -141,7 +109,7 @@ class MetabolicReconstructionPipeline_Blast:
 
             org_vs_UniprotBlastDB =  NGS_Util.createFilePath(self.orgBlastResDir, organismName+"-vs-up.blast")
             
-            self.ngsBlast.blastP(self.uniprot_blast_db,org_fasta, 6 , org_vs_UniprotBlastDB, 10)
+            self.ngsBlast.blastP(self.uniprot_blast_db,org_fasta, 6 , org_vs_UniprotBlastDB, self.blastEValue)
             
             return org_vs_UniprotBlastDB
 
@@ -162,7 +130,9 @@ class MetabolicReconstructionPipeline_Blast:
 
             Uniprot_vs_orgBlastDB = NGS_Util.createFilePath(self.orgBlastResDir, "up-vs-" + organismName+ ".blast")
 
-            self.ngsBlast.blastP(org_blast_db, self.uniprot_fasta,6, Uniprot_vs_orgBlastDB, 10)
+            #self.ngsBlast.blastP(org_blast_db, self.uniprot_fasta,6, Uniprot_vs_orgBlastDB, 1e-10)
+	    
+	    self.ngsBlast.blastP_with_Database_Size(org_blast_db, self.uniprot_fasta,6, Uniprot_vs_orgBlastDB, self.blastEValue, self.uniprotDBSize)
             
             return Uniprot_vs_orgBlastDB
 
@@ -190,6 +160,10 @@ class MetabolicReconstructionPipeline_Blast:
             
             orgJointBlast_fh         = open(orgJointBlast, "w")
             
+            print self.ec_files
+            print org_vs_UniprotBlastDB
+            print Uniprot_vs_orgBlastDB
+            print orgJointBlast
 
             combineBlasts(ec_files_fh, org_vs_UniprotBlastDB_fh, Uniprot_vs_orgBlastDB_fh, orgJointBlast_fh)
 
@@ -239,8 +213,6 @@ class MetabolicReconstructionPipeline_Blast:
             orgListFile_fh = open(self.orgListFile)
 
             for line in orgListFile_fh:
-                if line.startswith("#"):
-                    continue
                 
                 organismNameID, organismName = line.strip().split()
                 

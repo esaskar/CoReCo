@@ -22,6 +22,8 @@ class NGS_IPRScan:
     iprscanDir = ScriptsDir.IprscanDir
     iprscan    = iprscanDir + "iprscan -cli "
     converter  = "perl "  + iprscanDir + "converter.pl " 
+
+    iprscan5    = iprscanDir + "interproscan.sh "
     
     def protein_iprscan_to_raw_output(self, inputFile, outputFile):
         
@@ -55,6 +57,34 @@ class NGS_IPRScan:
         try:
             
             call = self.converter + " -format xml -input " + inputFile + " -output " + outputFile
+            
+            NGS_Util.executeCall(call)
+            
+        except Exception:
+            
+            print traceback.print_exc()
+
+    ############################################################################################################################################################
+    
+    
+    def protein_iprscan5_to_xml_output(self, inputFile, outputFile):
+        
+        try:
+
+            call = self.iprscan5 + " -i "   + inputFile + " -o " + outputFile + " -f XML -goterms -iprlookup "
+
+            NGS_Util.executeCall(call)
+
+                  
+        except Exception:
+            print traceback.print_exc()
+            
+    
+    def convert_iprscan5_xml_raw(self, inputFile, outputFile):
+        
+        try:
+            
+            call = self.iprscan5 + " -mode convert -i " + inputFile + " -f RAW -o " + outputFile
             
             NGS_Util.executeCall(call)
             

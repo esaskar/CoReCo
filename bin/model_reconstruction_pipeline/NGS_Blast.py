@@ -31,8 +31,11 @@ class NGS_Blast:
         
         try:
 
-            call = self.segmasker + " -in "   + inputFasta + " -infmt fasta -parse_seqids -outfmt maskinfo_asn1_bin -out " + dustFile
-            call = self.makeblastdb + " -in " + inputFasta + " -input_type fasta -dbtype prot -parse_seqids -mask_data "   + dustFile + " -out " +  blastDB
+            if not os.path.exists(dustFile):
+                call = self.segmasker + " -in "   + inputFasta + " -infmt fasta -parse_seqids -outfmt maskinfo_asn1_bin -out " + dustFile
+                NGS_Util.executeCall(call)
+
+            call = self.makeblastdb + " -in " + inputFasta + " -input_type fasta -dbtype prot -parse_seqids -hash_index -mask_data "   + dustFile + " -out " +  blastDB
 
             NGS_Util.executeCall(call)
                   
@@ -65,3 +68,16 @@ class NGS_Blast:
             
             print traceback.print_exc()
 
+
+    def blastP_with_Database_Size(self, blastDB, queryFastaFile, outfmt, blastResultFile, eValue, uniprotDBSize ):
+        
+        try:
+            
+            call = self.blastp + " -db " + blastDB + " -query " + queryFastaFile + " -outfmt " + str(outfmt)  + " -out " + blastResultFile + " -evalue " + str(eValue) + " " +   self.numThreads + " -dbsize " + str(uniprotDBSize)
+
+            NGS_Util.executeCall(call)
+            
+        except Exception:
+            
+            print traceback.print_exc()
+    

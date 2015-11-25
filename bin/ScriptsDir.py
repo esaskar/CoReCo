@@ -106,7 +106,7 @@ keggParsingScripts =  NGS_Util.createDirectoryPath(projectDir,"kegg-parsing")
 keggParsingScripts_build_kegg_no_general = keggParsingScripts + "build_kegg_no_general.sh"
 
 modelReconstructionPipelineScripts = NGS_Util.createDirectoryPath(projectBinDir,"model_reconstruction_pipeline")
-vttClusterBlast    = modelReconstructionPipelineScripts  + "VTTClusterBlast.sh"
-vttClusterIprscan  = modelReconstructionPipelineScripts  + "VTTClusterIprscan.sh"
-vttClusterGTGBlast = modelReconstructionPipelineScripts  + "VTTClusterGTGBlast.sh"
-vttClusterPipeline = modelReconstructionPipelineScripts  + "VTTClusterPipeline.sh"
+ClusterBlast    = modelReconstructionPipelineScripts  + "ClusterBlast.sh"
+ClusterIprscan  = modelReconstructionPipelineScripts  + "ClusterIprscan.sh"
+ClusterGTGBlast = modelReconstructionPipelineScripts  + "ClusterGTGBlast.sh"
+ClusterPipeline = modelReconstructionPipelineScripts  + "ClusterPipeline.sh"

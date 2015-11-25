@@ -12,13 +12,14 @@ import operator
 import traceback
 import time
 import shutil
-
+import glob
 import threading
 
 
 traceLog     = "../TraceLog.txt"
 executionLog = "../ExecutionLog.txt"
 errorLog     = "../ErrorLog.txt"
+
 
 
 def createFilePath(dirPath,fileName):
@@ -66,7 +67,7 @@ def createDirectory(dirPath):
             
             if not os.path.exists(dirPath):
                             
-                os.makedirs(dirPath)
+                os.mkdir(dirPath)
                 
             return dirPath
         
@@ -117,11 +118,15 @@ def executeCall(call):
 
         errorLogFile = open(errorLog,"a")
         
+        now = time.strftime("%c")
+
+        executionLogFile.write(now + "\n\n")
         executionLogFile.write(call + "\n\n")
 
+        errorLogFile.write(now + "\n\n")
         errorLogFile.write(call + "\n\n")
         
-        subprocess.call(call, stdin=executionLogFile, stderr=errorLogFile, shell=True)
+        subprocess.call(call, stdout=executionLogFile, stderr=errorLogFile, shell=True)
         
         errorLogFile.close()
         
@@ -130,6 +135,19 @@ def executeCall(call):
     except Exception:
 
         print traceback.print_exc()
+
+
+def moveFile(src,dest):
+
+    try:
+
+        if ( os.path.exists(src) ):
+        
+            shutil.move(src, dest)
+                    
+    except Exception:
+        print traceback.print_exc()
+
 
 
 def moveDirectory(src,dest):
@@ -142,6 +160,24 @@ def moveDirectory(src,dest):
                     
     except Exception:
         print traceback.print_exc()
+
+
+def moveDirectoryFiles(src,dest):
+
+    try:
+
+#        print src + "....." + dest
+
+
+        if ( os.path.exists(src) and os.path.exists(dest) ):
+            
+            for srcFile in glob.glob(src + "*"):
+            
+                shutil.move(srcFile, dest)           
+                    
+    except Exception:
+        print traceback.print_exc()
+
 
 
 
@@ -350,5 +386,18 @@ def executeThreadedCall(call):
         print traceback.print_exc()
 
 
-
+def checkFile(fileToCheck):
     
+    try:
+        
+        if os.path.exists(fileToCheck):
+            print("\tOK %s" % (fileToCheck))
+            return True
+        else:
+            print("\tMISSING %s" % (fileToCheck))
+            return False
+        
+    except Exception:
+
+        print traceback.print_exc()
+        return False
