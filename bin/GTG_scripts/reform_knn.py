@@ -20,7 +20,14 @@ ln.close()
 seqidec={}
 #save all seqidec[seq]=[id,ecs]
 for f in fn:
-	seq, id, ecs = f.strip().split("\t")
+        apu = f.strip().split("\t") 
+        seq=apu[0]
+        id=apu[1]
+        if len(apu)==3:
+            ecs=apu[2]
+        else:
+            ecs="?"
+	#seq, id, ecs = f.strip().split("\t")
 	if seq not in seqidec:
 		seqidec[seq] = ''
 	seqidec[seq] = ecs
