@@ -68,7 +68,7 @@ def combineBlasts(f, f2, f3, o):
             else:
                 pext = "?"
                 ecs = ["?"]
-             for ec in ecs:
+            for ec in ecs:
                 o.write("%s\t%s\t%s\t%s\t%s\n" % (s, upacc, pext, ec, "\t".join(map(str, blastres[s][q]))))
 
     
