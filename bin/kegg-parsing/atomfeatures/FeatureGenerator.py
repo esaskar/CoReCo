@@ -39,6 +39,7 @@ parser.add_option("-k", "--context", dest="context", type="string", default="0-1
 parser.add_option("-x", "--exclude", dest="exclude", action="store_true", default=False, help="Exclude central atom info from feature")
 parser.add_option("-a", "--full-atominfo", dest="atominfo", action="store_true", default=False, help="Use full atominfo")
 parser.add_option("-b", "--full-bondinfo", dest="bondinfo", action="store_true", default=False, help="Use full bondinfo")
+parser.add_option("-n", "--noappend", dest="noappend", action="store_true", default=False, help="Use full bondinfo")
 
 featuregroup = optparse.OptionGroup(parser, "Features")
 featuregroup.add_option("-A", dest="ad", action="store_true", help="Atom distribution")
@@ -182,6 +183,16 @@ def ComputeFeatures():
 			molfile = options.moldir + mol + ".mol"
 		else:
 			molfile = mol + ".mol"
+
+		if options.output:
+			featfile = options.output + mol + ".feat"
+		else:
+			featfile = mol + ".feat"
+
+		if os.path.isfile(featfile) and options.noappend:
+			print "featurefile already exists for ", mol
+			print "not recomputing "
+			continue
 		
 #		if options.verbose:
 		print "Molfile", molfile

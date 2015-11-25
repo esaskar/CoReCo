@@ -83,11 +83,16 @@ class Molecule:
 		f.readline()
 		
 		for line in f:
-			if line.startswith("M"):
+			if line.startswith("M") or line.startswith("A") or line.startswith("R") :
+				## added "A" and "R" to handle a mol file with R#'s (biocyc 0301121217)
+				##A   65
+				##R2
+				##A   64
+				##R1
 				section = "OTHER"
 			elif len(line.strip().split()) in [6,7]:
 				section = "BONDS"
-			elif len(line.strip().split()) in [13,16]:
+			elif len(line.strip().split()) in [11,13,16]: ## Added 11 as additional option to allow parsing of biocyc .mol-files (Merja Oja, 29.10.2013)
 				section = "ATOMS"
 			
 			if section == "ATOMS":
