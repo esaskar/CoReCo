@@ -4,7 +4,7 @@ buildBlastResult.py - combine two-way blast results with EC numbers from UniProt
 """
 
 import sys, datetime
-# f2 is Pichia->db;  f3 is db->Pichia
+# f2 is Organism->db;  f3 is db->Organism
 
 def combineBlasts(f, f2, f3, o):
 
@@ -13,17 +13,22 @@ def combineBlasts(f, f2, f3, o):
     for s in f:
         if s.startswith("#"):
             continue
-        uid, pext, ec = s.strip().split() # uniprot id, protein existence type, ec numbers (EC1,EC2,...)
+        apu = s.strip().split() 
+        uid=apu[0]
+        pext=apu[1]
+        if len(apu)==3:
+            ec=apu[2]
+        else:
+            ec="?"
         up2ec[uid] = [pext, []]
-        up2ec[uid][1] = ec.split(",")
+        up2ec[uid][1] = ec.split(",")        
     blastres = {}
 
     # org -> uniprot blast
     print "Reading org -> uniprot blast results..."
     for s in f2:
         sseqid, qseqid, pident, length, mismatch, gapopen, qstart, qend, sstart, send, evalue, bitscore = s.strip().split("\t")
-        #print qseqid, sseqid, evalue, bitscore
-
+        
         if sseqid not in blastres:
             blastres[sseqid] = {}
         blastres[sseqid][qseqid] = [evalue, float(bitscore), "?", "?"]
@@ -33,23 +38,11 @@ def combineBlasts(f, f2, f3, o):
     print "Reading uniprot -> org blast results..."
     for s in f3:
         qseqid, sseqid, pident, length, mismatch, gapopen, qstart, qend, sstart, send, evalue, bitscore = s.strip().split("\t")
-        #print qseqid, sseqid
-      #  if sseqid.startswith("sp|"):
-      #      sseqid = sseqid.split("|")[1]
-            #print "Pruned", sseqid
         # Discard result if sequence pair is not a hit in both directions
         if sseqid in blastres and qseqid in blastres[sseqid]:
             blastres[sseqid][qseqid][2] = evalue
             blastres[sseqid][qseqid][3] = float(bitscore)
-        #if sseqid not in blastres:
-        #    blastres[sseqid] = {}
-        #if qseqid not in blastres[sseqid]:
-        #    #print sseqid, qseqid
-        #    blastres[sseqid][qseqid] = ["?", "?", evalue, bitscore]
-        #else:
-        #    blastres[sseqid][qseqid][2] = evalue
-        #    blastres[sseqid][qseqid][3] = bitscore
-
+       
     print "Writing joint results..."
     o.write("#Output of %s in %s\n" % (sys.argv[0], datetime.datetime.now()))
     o.write("# BlastFwd: target vs UniProt blast\n")
@@ -72,16 +65,13 @@ def combineBlasts(f, f2, f3, o):
             upacc = q.split("|")[1]
             if upacc in up2ec:
                 pext, ecs = up2ec[upacc]
-                #ecs = ",".join(ecs)
             else:
                 pext = "?"
                 ecs = ["?"]
-            #print s, q, blastres[s][q]
-            for ec in ecs:
+             for ec in ecs:
                 o.write("%s\t%s\t%s\t%s\t%s\n" % (s, upacc, pext, ec, "\t".join(map(str, blastres[s][q]))))
 
-    #o.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (sseqid, qsetid, bev, bsc))
-
+    
 if __name__ == "__main__":
     f = open(sys.argv[1])   # UniProt ID -> EC list
     f2 = open(sys.argv[2])  # blast res org -> uniprot
