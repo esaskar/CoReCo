@@ -2,7 +2,7 @@
 
 import sys, re           # import package
 
-reEC = re.compile("DE\s+EC=(.+);") # regulation expression patterns  or reEC; \s means whitespace character;+ means more one or more replications; ( ) means sub ER and . means any character.
+reEC = re.compile("DE\s+EC=(.+);") # regulation expression patterns for reEC; \s means whitespace character;+ means more one or more replications; ( ) means sub ER and . means any character.
 
 f = open(sys.argv[1])      #input uniprot.dat
 o = open(sys.argv[2],"w")  #output file
@@ -12,11 +12,15 @@ for s in f:
     if s.startswith("ID"):
         id = s.strip().split()[1] # .strip can delet the heading and trailing of str with blank; split can change string into list
     elif s.startswith("AC"):
-        ac = s.split()[1].strip().strip(";")
+        if ac == None:
+            ac = s.split()[1].strip().strip(";")
+        ## Else will overwrite the first row of ACs
     elif s.startswith("DE"):
         m = reEC.match(s)
         if m:
-            ecs.append(m.group(1))   #list can .append but str not; group(0) means the whole pattern find by reEC; group(1) means only add the pattern in () (here is (.+)).
+            ec1 = m.group(1)
+            ec2 = ec1.split("{")[0].strip()
+            ecs.append(ec2)
     elif s.startswith("//"):
 	if len(ecs) == 0:
         	e = "?"
@@ -24,5 +28,5 @@ for s in f:
     		e = ",".join(ecs)
         print "%s\t%s\t%s" % (ac, id, e)
         o.write("%s\t%s\t%s\n" % (ac, id, e))
-        id = None
+        id = ac = None
         ecs = []
