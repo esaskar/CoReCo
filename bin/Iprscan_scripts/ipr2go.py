@@ -13,7 +13,8 @@ iprid = ''
 for s in f:
 	#delete all Tab and Space on the left side of each raw
 	s = s.strip()
-	if s.startswith("<interpro id=\"IPR"):
+	if s.startswith("<entry ac=\"IPR"):
+#<entry ac="IPR001790" desc="Ribosomal protein L10/acidic P0" name="Ribosomal_L10/acidic_P0" type="FAMILY">
 	#split s by space: ['<interpro', 'id="IPR000182"', 'name="GNAT', 'domain"', 'type="Domain"', 'parent_id="IPR016181">']
 		a = s.split()
 	#select the second item of a and split by =
@@ -24,13 +25,17 @@ for s in f:
 		iprid = b_id.split("\"")[1]
 		iprs[iprid] = [iprid,[]]
 		continue
-	if s.startswith("<classification id=\"GO"):
-	# <classification id="GO:0055114" class_type="GO">
+        if s.find("db=\"GO\" id=\"GO:") >= 20 :
+#20 is just an arbitary number
+#<go-xref category="BIOLOGICAL_PROCESS" db="GO"
 		a = s.split()
+        #        print a[3]
 	#"GO:0004635"
-		b = a[1].split("=")[1]
+		b = a[3].split("=")[1]
+        #        print b
 	# GO:0004635
 		GO = b.split("\"")[1]
+        #        print  GO
 		iprs[iprid][1].append(GO)
 # get the keys for the dictionary data structure
 keys = iprs.keys()
