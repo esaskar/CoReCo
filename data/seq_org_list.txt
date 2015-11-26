@@ -1,0 +1,9 @@
+MX6_1E_CDS_0001 Dgeo
+MX6_1E_CDS_0002 Dgeo
+Q9RYQ4  Drad
+Q9RYF8  Drad
+Q9RY13  Drad
+Q72IH5  Tthe
+Q72G92  Tthe
+Q72HA9  Tthe
+

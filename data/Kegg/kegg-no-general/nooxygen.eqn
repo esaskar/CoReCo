@@ -1,0 +1,8 @@
+#Output of "check_element_balances_newreactions.py -r /home/momerja/proj/coreco/bin/kegg-parsing/../../data/Kegg/newreactions/reactions_for_balancing -f /home/momerja/proj/coreco/bin/kegg-parsing/../../data/Kegg/aux/kegg-metabolite-formulae -o /home/momerja/proj/coreco/bin/kegg-parsing/../../data/Kegg/kegg-no-general/nooxygen --print-LP" on 2014-12-03 14:55:04.300163
+#no-balancing = False
+#ignore-missing-formulae = False
+#retain-missing = False
+#Reaction       Balanced        OrigStatus      NewStatus       Equation        OrgEquation
+R05537-KEGG-R05537      True    imbalance       balanced        1.0 C00010 + 1.0 C00016 + 1.0 C00003 + 1.0 C00002 + 2.0 C00001 + 1.0 C01198 <=> 1.0 C00024 + 1.0 C00013 + 1.0 C00020 + 1.0 C00004 + 1.0 C00805 + 1.0 C01352
+R05668-KEGG-R05668      True    balanced        already-balanced        C00002 + C00003 <=> C07024 + C00004
+
