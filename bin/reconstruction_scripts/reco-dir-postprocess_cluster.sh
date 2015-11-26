@@ -15,7 +15,9 @@
 # $5  label-outputdir-with-params
 # $8  bound file
 # $9  ec2rxn file
-# ${10}  exchange file
+# $10 sbml version
+# $11 reaction file
+# $12 pathway file
 
 
 if [ -z "$1" ]; then
@@ -62,11 +64,6 @@ fi
 
 if [ -z "$9" ]; then
    echo "Specify ec to reaction file (Kegg/aux/ec-list.txt)";
-   exit;
-fi
-
-if [ -z "${10}" ]; then
-   echo "Specify exchange reactions file";
    exit;
 fi
 
@@ -125,12 +122,6 @@ echo Generating SBML...
 taxon=`grep $4 $7|cut -d " " -f 1`
 echo $4: taxonomy id $taxon
 echo "python $CDIR/network2sbml.py $DDIR $EQN $Kegg/aux/kegg-compounds $taxon $DDIR/$4_$taxon $4_CoReCo $4 $DDIR/$4.sbml  ${11} ${12}"
-python $CDIR/network2sbml.py $DDIR $EQN $Kegg/aux/kegg-compounds $taxon $DDIR/$4_$taxon $4_CoReCo $4 $DDIR/$4.sbml ${11} ${12}
+python $CDIR/network2sbml.py $DDIR $EQN $Kegg/aux/kegg-compounds $taxon $DDIR/$4_$taxon $4_CoReCo $4 $DDIR/$4.sbml ${10} ${11} ${12}
 [ $? -ne 0 ] && echo network2sbml.py failed && exit $?
-
-
-echo Post-processing...
-echo "python $CDIR/exchange.py $DDIR/$4.sbml ${10} $8"
-python $CDIR/exchange.py $DDIR/$4.sbml ${10} $8
-[ $? -ne 0 ] && echo exchange.py failed && exit $?
 

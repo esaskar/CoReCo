@@ -65,7 +65,7 @@ def do_reconstruction(bfile, cdir, kdir, ddir, r2ec, ec2r, param_accept, param_r
         target_species = species
 
     adir = "%s/atommaps" % (kdir)
-    sourcesfn = "%s/aux/sources-augmented" % (cdir)
+    sourcesfn = "%s/aux/sources" % (cdir)
     ubiqfn = "%s/aux/empty" % (cdir)
     
     if odir_param_labeled:

@@ -94,13 +94,15 @@ ModelTrainingScripts_computeMergedScores = ModelTrainingScripts  + "computeMerge
 ModelTrainingScripts_computeECscores = ModelTrainingScripts  + "computeECscores.py"
 ModelTrainingScripts_computeBlastPvalues = ModelTrainingScripts  + "computeBlastPvalues.py"
 ModelTrainingScripts_compute_reaction_scores = ModelTrainingScripts  + "compute_reaction_scores.py"
-ModelTrainingScripts_common = ModelTrainingScripts  + "common.py"
 ModelTrainingScripts_combined_density = ModelTrainingScripts  + "combined_density.py"
 ModelTrainingScripts_bayesnet = ModelTrainingScripts  + "bayesnet.py"
 
 
 ReconstructionScripts = NGS_Util.createDirectoryPath(projectDir,"reconstruction_scripts")
 ReconstructionScripts_reco_dir =  ReconstructionScripts + "reco-dir"
+ReconstructionScripts_reco_dir_postprocess =  ReconstructionScripts + "reco-dir-postprocess.sh"
+ReconstructionScripts_reco_dir_cluster =  ReconstructionScripts + "reco-dir_cluster.sh"
+ReconstructionScripts_reco_dir_postprocess_cluster =  ReconstructionScripts + "reco-dir-postprocess_cluster.sh"
 
 keggParsingScripts =  NGS_Util.createDirectoryPath(projectDir,"kegg-parsing")
 keggParsingScripts_build_kegg_no_general = keggParsingScripts + "build_kegg_no_general.sh"

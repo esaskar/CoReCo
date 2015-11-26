@@ -39,7 +39,6 @@ uniprot_blast_db  		= ProjectDir.uniprot_blast_db
 ec_files          		= ProjectDir.ec_files
 ec2go             		= ProjectDir.ec2go
 uniprot_sprot_dat 		= ProjectDir.uniprot_sprot_dat
-gene2eclist			= ProjectDir.gene2eclist
 ec_files_sprot			= ProjectDir.ec_files_sprot
 
 orgListFile      		= ProjectDir.orgListFile
@@ -92,7 +91,6 @@ blastEValue   			= ProjectDir.blastEValue
 uniprotDBSize 			= ProjectDir.uniprotDBSize
 
 boundFile			= ProjectDir.boundsPath
-exchangeFile		 	= ProjectDir.exchangeReactionsPath
 pathwayFile                     = ProjectDir.pathwayFile
 rxnNamesFile                    = ProjectDir.rxnNamesFile
 
@@ -295,7 +293,7 @@ try:
             raise Exception("Missing required input files")
     
         createSBML = MetabolicReconstructionPipeline_ClusterCreateSBML.MetabolicReconstructionPipeline_ClusterCreateSBML()  
-        createSBML.initialize(boundFile, exchangeFile, pathwayFile, rxnNamesFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList)
+        createSBML.initialize(boundFile, pathwayFile, rxnNamesFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList)
         createSBML.doCreateSBML()
            
     

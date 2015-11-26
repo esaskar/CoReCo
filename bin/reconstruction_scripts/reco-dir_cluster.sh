@@ -3,10 +3,7 @@
 #$ -j y
 #$ -cwd
 #$ -R y
-#$ -q all.q@compute-0-6
 
-
-##  export PATH=/home/fsfahad/coreco/bin/model_training_scripts/:/share/apps/local/lib64/python2.6/site-packages/:$PATH
 
 # $1  data dir 
 # $2  param-accept
@@ -14,7 +11,7 @@
 # $4  species
 # $5  label-outputdir-with-params
 # $8  bound file
-# $9  exchange file
+# $9  ec-list file
 
 
 if [ -z "$1" ]; then

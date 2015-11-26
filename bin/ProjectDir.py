@@ -30,8 +30,7 @@ uniprot_blast_db = NGS_Util.createFilePath(orgBlastDBDir, "uniprot")
 ##########################################################################################     Reactions  ##########################################################################################
 
 keggDataDir		= NGS_Util.createFilePath(projectDataDir, "Kegg")  
-keggAtomMapsDataDir     = NGS_Util.createDirectoryPath(keggDataDir, "kegg-no-general/atommaps") 
-gene2eclist         	= NGS_Util.createFilePath(keggDataDir, "newreactions/gene2eclist.txt") 
+keggAtomMapsDataDir     = NGS_Util.createDirectoryPath(keggDataDir, "kegg-no-general/atommaps")
 ec2rxnFile         	= NGS_Util.createFilePath(keggDataDir,"aux/ec-list.txt") 
 
 ##########################################################################################     EC Go Data Files   ##########################################################################################
@@ -94,7 +93,6 @@ NGS_Util.createDirectory(modelTrainingDir)
 
 ##########################################################################################     Model Rencontruction  ######################################################################################
 
-exchangeReactionsPath	     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/exchangeReactions.txt")
 boundsPath		     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/harvestedbounds.txt")
 rxnNamesFile		     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/reaction-names")
 pathwayFile		     = NGS_Util.createFilePath(projectDataDir, "Kegg/aux/kegg-pathways")

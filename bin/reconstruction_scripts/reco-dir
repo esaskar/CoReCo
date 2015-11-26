@@ -6,7 +6,7 @@
 # $4  species
 # $5  label-outputdir-with-params
 # $8  bound file
-# $9  exchange file
+# $9  ec-list file
 
 if [ -z "$1" ]; then
    echo "Specify data dir";
@@ -62,8 +62,6 @@ CDIR=$5
 
 Kegg=$6
 KDIR=$Kegg/kegg-no-general
-
-EQN=$KDIR/nooxygen.eqn
 
 ERRORDIR=$1/reco-logs/
 mkdir -p $ERRORDIR

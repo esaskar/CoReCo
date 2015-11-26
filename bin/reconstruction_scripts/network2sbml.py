@@ -13,11 +13,6 @@ import common
 
 SUM_STOIC_COEFFS = 1  # sum coefficients of both sides: 2A + 2B <=> 3A + 1C ---> 2B <=> 1A + 1C
 
-SBML_LEVEL = 3
-SBML_VERSION = 1
-#SBML_LEVEL = 2
-#SBML_VERSION = 4
-
 NOTES = """
 <body xmlns="http://www.w3.org/1999/xhtml">
 <p>
@@ -83,12 +78,15 @@ def get_reaction_id(r):
     return r.split("_")[0].replace("#","_")
 #    return r.split("_")[0]
 
-def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, rxnnames=None, pathways=None, pathwayasnames=None):
+def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sbmlversion,  rxnnames=None, pathways=None, pathwayasnames=None):
 
     DEFAULT_COMPARTMENT = "cytosol"
     reKEGGRID = re.compile("R\d\d\d\d\d")
 
-    d = libsbml.SBMLDocument(SBML_LEVEL, SBML_VERSION)
+    if sbmlversion == 2:
+        d = libsbml.SBMLDocument(2, 4)
+    else:
+        d = libsbml.SBMLDocument(3, 1)
 
     ns = d.getNamespaces()
     ns.add("http://www.w3.org/1999/02/22-rdf-syntax-ns", "rdf")
@@ -459,7 +457,7 @@ def read_balanced_reactions(f):
             reactions[rid] = (isbalanced, ostatus, nstatus, eqn)
     return reactions
 
-def main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, rxnnamefile=None, pathwayfile=None):
+def main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, sbmlversion,  rxnnamefile=None, pathwayfile=None):
     print("Loading molecule names... ")
     # dictionary where keys are mol ids (C00001) and
     # items are names from second column of kegg-compounds file
@@ -496,7 +494,7 @@ def main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, rxnnamef
     else:
         rxnnames = None
   #  print "%d reactions" % (len(reco))
-    sbml = convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, rxnnames, pathways, pathwayasnames)
+    sbml = convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sbmlversion,  rxnnames, pathways, pathwayasnames)
     libsbml.writeSBMLToFile(sbml, outfn)
 
 if __name__ == "__main__":
@@ -508,16 +506,17 @@ if __name__ == "__main__":
     modelname = sys.argv[6]
     species = sys.argv[7]
     outfn = sys.argv[8] # sbml output
+    sbmlversion = sys.argv[9]
     pathwayfile = None
     rxnnamefile = None
-    if len(sys.argv) > 9:
-        if(os.path.isfile(sys.argv[9])):
-            print "Reading reaction paths"
-            rxnnamefile=sys.argv[9]
     if len(sys.argv) > 10:
         if(os.path.isfile(sys.argv[10])):
             print "Reading reaction paths"
-            pathwayfile=sys.argv[10]
+            rxnnamefile=sys.argv[10]
+    if len(sys.argv) > 11:
+        if(os.path.isfile(sys.argv[11])):
+            print "Reading reaction paths"
+            pathwayfile=sys.argv[11]
 
-    main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, rxnnamefile, pathwayfile)
+    main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, sbmlversion,  rxnnamefile, pathwayfile)
 

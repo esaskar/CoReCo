@@ -76,7 +76,6 @@ networkReconstructionOrgList = ProjectDir.networkReconstructionOrgList
 
 keggAtomMapsDataDir = ProjectDir.keggAtomMapsDataDir
 boundFile			= ProjectDir.boundsPath
-exchangeFile		 	= ProjectDir.exchangeReactionsPath
 pathwayFile                     = ProjectDir.pathwayFile
 rxnNamesFile                    = ProjectDir.rxnNamesFile
 
@@ -117,7 +116,7 @@ try:
     networkReconstruction.doNetworkReconstruction()
     
     createSBML = MetabolicReconstructionPipeline_CreateSBML.MetabolicReconstructionPipeline_CreateSBML()
-    createSBML.initialize(boundFile, exchangeFile, pathwayFile, rxnNamesFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList)
+    createSBML.initialize(boundFile, pathwayFile, rxnNamesFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList)
     createSBML.doCreateSBML()
         
 except Exception:
