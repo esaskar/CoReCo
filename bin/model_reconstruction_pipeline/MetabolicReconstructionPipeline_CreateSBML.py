@@ -63,7 +63,7 @@ class MetabolicReconstructionPipeline_CreateSBML:
                 intAccept2 = "%.9f" % (self.intAaccept)
                 intReject2 = "%.9f" % (self.intReject)
             
-		call = "bash " +  ScriptsDir.ReconstructionScripts_reco_dir_postprocess_cluster + " " + self.modelTrainingModelDir + " " + intAccept2 + " " + intReject2 + " " + organismID  + " " + ScriptsDir.ReconstructionScripts +  " " +  self.keggDataDir  + " " + self.taxonomy  + " " + self.bounds + " " + self.ec2rxnFile  + " " + " " + self.rxnNamesFile + " " + self.pathwayFile
+		call = "bash " +  ScriptsDir.ReconstructionScripts_reco_dir_postprocess + " " + self.modelTrainingModelDir + " " + intAccept2 + " " + intReject2 + " " + organismID  + " " + ScriptsDir.ReconstructionScripts +  " " +  self.keggDataDir  + " " + self.taxonomy  + " " + self.bounds + " " + self.ec2rxnFile  + " " + "3" +" " + self.rxnNamesFile + " " + self.pathwayFile
 
 		NGS_Util.executeCall(call)
 
