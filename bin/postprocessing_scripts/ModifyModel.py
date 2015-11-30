@@ -90,7 +90,15 @@ class ModifyModel:
                 if s.startswith("#"):
                     continue                
                 key,name,eq,lb,ub= s.split(",")
-                lhs, rhs = eq.split(" <=> ")
+                compounds = eq.split(" <=> ")
+                lhs = ''
+                rhs = ''
+                if len(compounds) == 2:
+                    lhs = compounds[0]
+                    rhs = compounds[1]
+                else:
+                    lhs = compounds[0]
+                    
                 subs = set()
                 pros = set()
                 subCoeff = {}
@@ -100,16 +108,20 @@ class ModifyModel:
                     vals = mol.split()
                     if len(vals) == 2:
                         coeff, mol = vals
-                    else:
+                    elif len(vals) == 1:
                         coeff, mol = 1, vals[0]
+                    else:
+                        continue
                     subs.add(mol)
                     subCoeff[mol] = coeff
                 for mol in rhs:
                     vals = mol.split()
                     if len(vals) == 2:
                         coeff, mol = vals
-                    else:
+                    elif len(vals) == 1:
                         coeff, mol = 1, vals[0]
+                    else:
+                        continue
                     pros.add(mol)
                     proCoeff[mol] = coeff
                 #print "creating reaction: "+ key    
