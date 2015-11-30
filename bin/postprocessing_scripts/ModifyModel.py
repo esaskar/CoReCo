@@ -105,7 +105,7 @@ class ModifyModel:
                     pros.add(mol)
                     proCoeff[mol] = coeff
                 #print "creating reaction: "+ key    
-                reaction = Reaction(key,  name, pros, subs, proCoeff, subCoeff, lb, ub)
+                reaction = Reaction(key,  name, subs, pros, subCoeff,  proCoeff, lb, ub)
                 #print "saving reaction: "+ key 
                 self.reactions.append(reaction)
                 #print "done" 
@@ -124,15 +124,15 @@ class ModifyModel:
         for s in f: 
             if s.startswith("#"):
                 continue
-            compound, coefficient= s.split(',')            
-            if(coefficient < 0):
+            compound, coefficient= s.split(',')           
+            if(float(coefficient) < 0):
                 subs.add(compound)
-                subCoeff[compound]=(coefficient)
+                subCoeff[compound]=(abs(float(coefficient)))
             else:
                 pros.add(compound)
-                proCoeff[compound] = (coefficient)
+                proCoeff[compound] = (abs(float(coefficient)))
         
-        reaction = Reaction(key,  name, pros, subs, proCoeff, subCoeff, lb, ub)
+        reaction = Reaction(key,  name, subs,  pros, subCoeff,  proCoeff, lb, ub)
         return reaction
         
         
@@ -207,11 +207,14 @@ class ModifyModel:
             #read model
             reader = libsbml.SBMLReader()
             document = reader.readSBML(modelPath)
+            self.model = document.getModel()
             newDocument = document.clone();
-            self.model = newDocument.getModel()
+            
              
             if(reactionPath):            
                 self.parseReactionBag(reactionPath)
+                if self.model == None:
+                    return
                 listOfReactions = self.model.getListOfReactions()
                 for reaction in self.reactions:
                     if not reaction.isInModel(listOfReactions):
