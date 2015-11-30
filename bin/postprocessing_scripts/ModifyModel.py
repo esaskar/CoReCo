@@ -14,6 +14,7 @@ class Reaction:
         self.proCoeff = proCoeff.copy()
         self.lb = lb
         self.ub = ub
+        self.overReaction = ''
 
     def getId(self):
         return self.id
@@ -27,6 +28,9 @@ class Reaction:
     def getub(self):
         return self.ub;
         
+    def getOverReaction(self):
+        return self.overReaction;
+    
     def getSubstrates(self):
         return self.substrates
 
@@ -64,11 +68,15 @@ class Reaction:
 
     def isInModel(self, reactions):
         for reaction in reactions:
+            if reaction.getId() == self.getId():
+                self.overReaction = reaction.getId()
+                return True
             sizeR1 = len(self.substrates) + len(self.products)
             sizeR2 = reaction.getNumReactants() + reaction.getNumProducts()
             if sizeR1 == sizeR2:
                 if self.containsAllMetabolites(reaction.getListOfReactants())\
                 and self.containsAllMetabolites(reaction.getListOfProducts()):
+                    self.overReaction = reaction.getId()
                     return True
 
         return False
@@ -219,7 +227,10 @@ class ModifyModel:
                 for reaction in self.reactions:
                     if not reaction.isInModel(listOfReactions):
                         print "adding Reaction:" + reaction.getId()
-                        self.addReactionInToModel(reaction, self.model)
+                    else:
+                        print "the reaction " + reaction.getId() + " is already on the model. OverWriting..."
+                        self.model.getReaction(reaction.getOverReaction()).removeFromParentAndDelete()
+                    self.addReactionInToModel(reaction, self.model)
                         
             if(biomassPath):
                 print "adding biomass Reaction"
