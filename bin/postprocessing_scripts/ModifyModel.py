@@ -173,6 +173,26 @@ class ModifyModel:
                 ubParameter.setValue(float(ub))
                 
 
+    def addExchangeReactions(self, model):
+        for metabolite in model.getListOfSpecies():
+            name = "Ex_"+metabolite.getId()
+            if model.getReaction(name) == None:
+                r = model.createReaction()
+                r.setId(name)
+                r.setMetaId("meta_"+ name)
+                reactant = r.createReactant()
+                reactant.setSpecies(metabolite.getId())
+                reactant.setStoichiometry(float(1))
+                reactant.setConstant(True)
+                kinLaw = r.createKineticLaw()
+                lbParameter= kinLaw.createLocalParameter()
+                lbParameter.setId("LOWER_BOUND")
+                lbParameter.setValue(float(0))
+                ubParameter= kinLaw.createLocalParameter()
+                ubParameter.setId("UPPER_BOUND")
+                ubParameter.setValue(float(1000))
+        
+        
     def addReactionInToModel(self, reaction, model):
             # Adds the metabolites that are not already in the model
             for metabolite in set(list(reaction.getSubstrates()) +
@@ -254,6 +274,8 @@ class ModifyModel:
                 print "adding new bounds"
                 self.parseBounds(boundsPath,  self.model)
 
+            self.addExchangeReactions(self.model)
+                 
             if(outputPath):
                 print "Writing file"                
                 newDocument.setModel(self.model)
