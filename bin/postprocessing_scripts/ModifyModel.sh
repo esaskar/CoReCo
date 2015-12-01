@@ -11,14 +11,14 @@
 
 path_models=example_input_files/models
 path_biomass=example_input_files/biomass.csv
-path_bounds=example_input_files/harvestedbounds.csv
+path_bounds=example_input_files/subbounds17
 path_reactions=example_input_files/reactions2add.csv
 output_path=example_input_files/output  
 
 for name in $(ls $path_models -1)
 do
   echo $name
-  python ModifyModel.py -m  $path_models/$name -r $path_reactions  -b $path_biomass -k $path_bounds -o $output_path/$name
+  python ModifyModel.py -m  $path_models/$name -r $path_reactions  -b $path_biomass -k $path_bounds -e True -o $output_path/$name
 done
 
 

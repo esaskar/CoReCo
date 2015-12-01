@@ -239,7 +239,7 @@ class ModifyModel:
 
    
 
-    def __init__(self,  modelPath,  reactionPath,  biomassPath,  boundsPath,  outputPath):     
+    def __init__(self,  modelPath,  reactionPath,  biomassPath,  boundsPath,  exchange,  outputPath):     
         self.reactions = []  
         self.model =''
         
@@ -273,8 +273,9 @@ class ModifyModel:
             if(boundsPath):           
                 print "adding new bounds"
                 self.parseBounds(boundsPath,  self.model)
-
-            self.addExchangeReactions(self.model)
+           
+            if(exchange):
+                self.addExchangeReactions(self.model)
                  
             if(outputPath):
                 print "Writing file"                
@@ -287,13 +288,14 @@ class ModifyModel:
 if __name__ == "__main__":
     import sys,  getopt
     
-    myopts, args = getopt.getopt(sys.argv[1:],"m:r:b:k:o:")
+    myopts, args = getopt.getopt(sys.argv[1:],"m:r:b:k:o:e")
     modelPath = ''
     reactionPath = ''
     biomassPath = ''
     boundsPath = ''
     outputPath = ''
     model = ''  
+    exchange = True
 
     for o,  a in myopts:
         if o == '-m':
@@ -306,7 +308,9 @@ if __name__ == "__main__":
             boundsPath = a
         elif o == '-o':
             outputPath = a
+        elif e == '-e':
+            exchange = a
         else:
-            print("Usage: %s -m path_of_the_models -r path_of_the_reactions -br path_of_the_biomass_file -b path_of_the_bounds_file -o path_of_the_output_folder" % sys.argv[0])    
+            print("Usage: %s -m path_of_the_models -r path_of_the_reactions -br path_of_the_biomass_file -b path_of_the_bounds_file -o path_of_the_output_folder -e (True/False) Adding exchange reactions" % sys.argv[0])    
           
-    ModifyModel(modelPath,  reactionPath,  biomassPath,  boundsPath,  outputPath)
+    ModifyModel(modelPath,  reactionPath,  biomassPath,  boundsPath,  exchange,  outputPath)
