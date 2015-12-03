@@ -1,0 +1,7 @@
+# carbon containing sources: glucose, xylose
+C00031
+C00181
+# general metabolites (wildcard) and iron
+B00001
+B00002
+

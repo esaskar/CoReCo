@@ -14,6 +14,7 @@ CoReCo is a computational method for reconstructing metabolic networks of multip
 5. [R](http://www.r-project.org/)
 6. Python module [newick](http://users-birc.au.dk/mailund/newick.html)
 7. [libsbml](http://sourceforge.net/projects/sbml/files/libsbml/5.7.0/stable/)
+8. [fastasplitN](http://www.bioinformatics.nl/tools/profasta/fastasplitn.c)
 
 ## Data requirements
 

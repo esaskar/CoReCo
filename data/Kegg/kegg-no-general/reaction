@@ -1,0 +1,16 @@
+///
+ENTRY       rxn00102-iBsu1103-R00132                      Reaction
+EQUATION    C00288 <=> C00001 + C00011
+COMMENT     Balanced ... balanced ... already-balanced ... without-electrons-balancing-not-done
+ENZYME      4.2.1.1
+///
+ENTRY       OPHHX3-iJO1366-                      Reaction
+EQUATION    C05810 + 2 C00002 + 3 C00001 + C00003 <=> C05811 + 2 C00008 + C00004 + 2 C00009
+COMMENT     Balanced ... balanced ... already-balanced ... without-electrons-balancing-not-done
+ENZYME
+///
+ENTRY       R05537-KEGG-R05537                      Reaction
+EQUATION    1.0 C00010 + 1.0 C00016 + 1.0 C00003 + 1.0 C00002 + 2.0 C00001 + 1.0 C01198 <=> 1.0 C00024 + 1.0 C00013 + 1.0 C00020 + 1.0 C00004 + 1.0 C00805 + 1.0 C01352
+COMMENT     Unbalanced by O2E20 ... imbalance ... balanced ... without-electrons-balancing-not-done
+ENZYME
+
