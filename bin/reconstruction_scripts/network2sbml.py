@@ -78,12 +78,11 @@ def get_reaction_id(r):
     return r.split("_")[0].replace("#","_")
 #    return r.split("_")[0]
 
-def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sbmlversion,  rxnnames=None, pathways=None, pathwayasnames=None):
+def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sbmlversion, bounds,  rxnnames=None, pathways=None, pathwayasnames=None):
 
     DEFAULT_COMPARTMENT = "cytosol"
     reKEGGRID = re.compile("R\d\d\d\d\d")
-
-    if sbmlversion == 2:
+    if sbmlversion == 2:	
         d = libsbml.SBMLDocument(2, 4)
     else:
         d = libsbml.SBMLDocument(3, 1)
@@ -135,7 +134,7 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sb
     for r in reco:
         rid = get_reaction_id(r)	
         if not rid in eqns:
-            print "Warning: %s not in balanced equations" % (rid)
+            #print "Warning: %s not in balanced equations" % (rid)
             continue
         if rid not in reactions:
             reactions.add(rid)
@@ -265,12 +264,34 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sb
         keggrid = parts[len(parts)-1]
         if not reKEGGRID.match(keggrid):
             keggrid = None
+         
+       
+        try:
+            r_bounds = bounds[rid]
+            lb, ub = r_bounds.split(",")
+            kinLaw = r.createKineticLaw()
+            lbParameter= kinLaw.createLocalParameter()
+            lbParameter.setId("LOWER_BOUND")        
+            lbParameter.setValue(float(lb))
+            ubParameter= kinLaw.createLocalParameter()
+            ubParameter.setId("UPPER_BOUND")
+            ubParameter.setValue(float(ub))       
+        except Exception as ex:
+            print "No bounds for %s",  rid
+            kinLaw = r.createKineticLaw()
+            lbParameter= kinLaw.createLocalParameter()
+            lbParameter.setId("LOWER_BOUND")        
+            lbParameter.setValue(float(-1000))
+            ubParameter= kinLaw.createLocalParameter()
+            ubParameter.setId("UPPER_BOUND")
+            ubParameter.setValue(float(1000))       
+
 
 	if not r.isSetId():
             ridfix = rid.replace("-","")
             ridfix = "N"+ridfix
             r.setId(str(ridfix))
-            print ("Adding N to reaction name: %s -> %s" % (rid,ridfix))
+            #print ("Adding N to reaction name: %s -> %s" % (rid,ridfix))
         r.setCompartment(DEFAULT_COMPARTMENT)
         r.setReversible(True)
         r.setMetaId("meta_%s" % (rid))	
@@ -302,10 +323,9 @@ def convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sb
                 rn=rn.replace("&omega;","omega")
                 r.setName(rn)
             else:
-                print ("rid: %s not found in rxnnames" % rid) 
+                #print ("rid: %s not found in rxnnames" % rid) 
                 r.setName("")
-        
-
+   
 # <reaction metaid="meta_r_0001" sboTerm="SBO:0000176" id="r_0001" name="(R)-lactate:ferricytochrome-c 2-oxidoreductase"> - <notes> - <body xmlns="http://www.w3.org/1999/xhtml">
 #  <p>GENE_ASSOCIATION:((YDL174C and YEL039C) or (YDL174C and YJR048W) or (YEL039C and YEL071W) or (YEL071W and YJR048W))</p>
 #  </body>
@@ -457,7 +477,7 @@ def read_balanced_reactions(f):
             reactions[rid] = (isbalanced, ostatus, nstatus, eqn)
     return reactions
 
-def main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, sbmlversion,  rxnnamefile=None, pathwayfile=None):
+def main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, sbmlversion, boundsfile,  rxnnamefile=None, pathwayfile=None):
     print("Loading molecule names... ")
     # dictionary where keys are mol ids (C00001) and
     # items are names from second column of kegg-compounds file
@@ -490,11 +510,19 @@ def main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, sbmlvers
             sisalto = s.strip().split("\t") 
             if len(sisalto)>1:
                 rxnnames[sisalto[0]]=sisalto[1]
-                #print ("rxnnames[%s] = %s" % (sisalto[0],sisalto[1]))
+                #print ("rxnnames[%s] = %s" % (sisalto[0],sisalto[1]))                
     else:
         rxnnames = None
+        
+    bounds={};
+    if boundsfile is not None:
+        fp = open(boundsfile)        
+        for s in fp: 
+            sisalto = s.strip().split("\t") 
+            if len(sisalto)>1:
+                bounds[sisalto[0].strip()]=sisalto[3] +","+ sisalto[4]
   #  print "%d reactions" % (len(reco))
-    sbml = convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sbmlversion,  rxnnames, pathways, pathwayasnames)
+    sbml = convert_to_SBML(reco, eqns, mol2name, taxon, modelid, modelname, species, sbmlversion, bounds,  rxnnames, pathways, pathwayasnames)
     libsbml.writeSBMLToFile(sbml, outfn)
 
 if __name__ == "__main__":
@@ -506,17 +534,18 @@ if __name__ == "__main__":
     modelname = sys.argv[6]
     species = sys.argv[7]
     outfn = sys.argv[8] # sbml output
-    sbmlversion = sys.argv[9]
+    sbmlversion = sys.argv[9] # sbml version (2 or 3)
+    boundsfile = sys.argv[10] # sbml version (2 or 3)
     pathwayfile = None
     rxnnamefile = None
-    if len(sys.argv) > 10:
-        if(os.path.isfile(sys.argv[10])):
-            print "Reading reaction paths"
-            rxnnamefile=sys.argv[10]
     if len(sys.argv) > 11:
         if(os.path.isfile(sys.argv[11])):
-            print "Reading reaction paths"
-            pathwayfile=sys.argv[11]
+            #print "Reading reaction paths"
+            rxnnamefile=sys.argv[11]
+    if len(sys.argv) > 12:
+        if(os.path.isfile(sys.argv[12])):
+            #print "Reading reaction paths"
+            pathwayfile=sys.argv[12]
 
-    main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, sbmlversion,  rxnnamefile, pathwayfile)
+    main(rdir, eqnfn, molfn, taxon, modelid, modelname, species, outfn, sbmlversion, boundsfile,  rxnnamefile, pathwayfile)
 
