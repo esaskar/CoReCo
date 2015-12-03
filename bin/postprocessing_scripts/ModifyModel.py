@@ -275,6 +275,7 @@ class ModifyModel:
                 self.parseBounds(boundsPath,  self.model)
            
             if(exchange):
+		print "adding exchage reactions"
                 self.addExchangeReactions(self.model)
                  
             if(outputPath):
@@ -308,7 +309,7 @@ if __name__ == "__main__":
             boundsPath = a
         elif o == '-o':
             outputPath = a
-        elif e == '-e':
+        elif o == '-e':
             exchange = a
         else:
             print("Usage: %s -m path_of_the_models -r path_of_the_reactions -br path_of_the_biomass_file -b path_of_the_bounds_file -o path_of_the_output_folder -e (True/False) Adding exchange reactions" % sys.argv[0])    
