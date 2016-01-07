@@ -1,1 +1,3 @@
-#replace this with organism list
+Pgra
+Pgeo
+
