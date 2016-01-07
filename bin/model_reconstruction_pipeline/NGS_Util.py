@@ -54,7 +54,7 @@ def logCall(call):
     fw.close()
 
 def executeCall(call):
-    print call + "\n\n"
+    print "executeCall:", call
     executionLogFile = open(executionLog,"a")
     errorLogFile = open(errorLog,"a")
     now = time.strftime("%c")
@@ -62,7 +62,8 @@ def executeCall(call):
     executionLogFile.write(call + "\n\n")
     errorLogFile.write(now + "\n\n")
     errorLogFile.write(call + "\n\n")
-    subprocess.call(call, stdout=executionLogFile, stderr=errorLogFile, shell=True)
+#    subprocess.check_call(call, stdout=executionLogFile, stderr=errorLogFile, shell=True)
+    subprocess.check_call(call.split(" "), stdout=executionLogFile, stderr=errorLogFile)
     errorLogFile.close()
     executionLogFile.close()
 

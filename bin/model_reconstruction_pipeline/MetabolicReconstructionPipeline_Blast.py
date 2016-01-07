@@ -3,9 +3,7 @@
 Author: M. Fahad Syed (fahad.syed@vtt.fi)
 """
 
-import os
-import sys
-import traceback
+import sys, os
 import NGS_Util
 import NGS_Blast
 import ProjectDir
@@ -15,7 +13,9 @@ import ScriptsDir
 
 sys.path.append(ScriptsDir.BLASTScripts)
 
-from buildBlastResult  import combineBlasts
+print sys.path
+
+from buildBlastResult import combineBlasts
 
 class MetabolicReconstructionPipeline_Blast:
 
@@ -41,7 +41,7 @@ class MetabolicReconstructionPipeline_Blast:
     def initialize(self, uniprot_fasta, ec_files, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir, blastEValue, uniprotDBSize):
     
         self.uniprot_fasta     = uniprot_fasta
-	    self.uniprot_blast_db  = uniprot_blast_db
+        self.uniprot_blast_db  = uniprot_blast_db
         self.ec_files          = ec_files
         self.orgListFile       = orgListFile
         self.orgFastaDir       = orgFastaDir
@@ -49,8 +49,8 @@ class MetabolicReconstructionPipeline_Blast:
         self.orgBlastDustDir   = orgBlastDustDir
         self.orgBlastResDir    = orgBlastResDir
         self.jointBlastDir     = jointBlastDir
-	    self.blastEValue       = blastEValue
-	    self.uniprotDBSize     = uniprotDBSize
+        self.blastEValue       = blastEValue
+        self.uniprotDBSize     = uniprotDBSize
 
     def makeBlastDB(self, organismName):
         print "Make Blast Database: " + organismName

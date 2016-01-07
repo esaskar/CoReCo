@@ -16,29 +16,18 @@ class MetabolicReconstructionPipeline_PreProcess:
     uniprot_fasta     = "" #need to be initialized     
     uniprot_dust      = ""
     uniprot_blast_db  = ""
-
     nrdb40_fasta     = ""  #need to be initialized     
     nrdb40_dust      = ""
     nrdb40_blast_db  = ""
-
-
     ec_files          = ""  #need to be initialized     
     uniprot_sprot_dat = ""  #need to be initialized          
-    
-    
     orgListFile       = ""  #Name of file containing Organisms List                  #need to be initialized
     orgFastaDir       = ""  #Directory path containing organisms fasta sequences     #need to be initialized         
     seq_org_list      = ""  #Name of file containing Organisms List with GeneIdentifiers List #need to be initialized
-    
-    
     orgBlastDBDir     = ""  #Directory path for organisms BLASTable databases        #need to be initialized     
     orgBlastDustDir   = ""  #Directory path for organisms DUST  files                #need to be initialized     
-
-
     keggAtomMapsDataDir = ""
-
     ngsBlast          = NGS_Blast.NGS_Blast()
-    
 
     def initialize(self, uniprot_fasta, uniprot_dust, uniprot_blast_db,  nrdb40_fasta, nrdb40_dust, nrdb40_blast_db, orgListFile, orgFastaDir, seq_org_list, orgBlastDBDir, orgBlastDustDir, ec_files, uniprot_sprot_dat, keggAtomMapsDataDir ):
         self.uniprot_fasta     = uniprot_fasta
@@ -77,8 +66,9 @@ class MetabolicReconstructionPipeline_PreProcess:
                 self.ngsBlast.makeProteinBlastDBFromDustFile(self.nrdb40_fasta, self.nrdb40_dust, self.nrdb40_blast_db)
        
     def create_new_seq_org_list(self):
-        print "create_new_seq_org_list"
+#        print "create_new_seq_org_list"
         orgListFile_fh = open(self.orgListFile)
+        errors = 0
         for orgLine in orgListFile_fh:
             if orgLine.startswith("#"):
                 continue
@@ -92,8 +82,12 @@ class MetabolicReconstructionPipeline_PreProcess:
 
             seqOrgListFile_fh.close()
             if not found:
-                print "create_new_seq_org_list: " + organismName		    
+#                print "create_new_seq_org_list: " + organismName		    
                 org_fasta = NGS_Util.createFilePath(self.orgFastaDir, organismName + ".faa")
+                if not os.path.exists(org_fasta):
+                    sys.stderr.write("Unable to find protein sequences file (.faa) for %s: %s\n" % (organismName, org_fasta))
+                    errors +=1
+                    continue
                 org_fasta_fh = open(org_fasta)
                 seqOrgListFile_fh = open(self.seq_org_list,"a")      #output file
                 for line in org_fasta_fh:
@@ -106,7 +100,10 @@ class MetabolicReconstructionPipeline_PreProcess:
                         seqOrgListFile_fh.write( id + "\t" +  organismID + "\n" )
                 seqOrgListFile_fh.close()
                 org_fasta_fh.close()
-        orgListFile_fh.close() 
+
+        if errors > 0:
+            sys.stderr.write("Provide a FASTA file for each species in the above locations to continue.\n")
+            sys.exit(1)        
     
     def generateKeggData(self):
         print "generateKeggData"
@@ -116,7 +113,7 @@ class MetabolicReconstructionPipeline_PreProcess:
 
     def preProcess(self):
         self.makeUniprotBlastDB()
-	    self.preprocess_EC_UniprotSprot_data_files()
+        self.preprocess_EC_UniprotSprot_data_files()
         self.makeNrdb40BlastDB()
-	    self.create_new_seq_org_list()
-	    self.generateKeggData()
+        self.create_new_seq_org_list()
+        self.generateKeggData()

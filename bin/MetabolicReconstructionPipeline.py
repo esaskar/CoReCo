@@ -3,10 +3,8 @@
 Author: M. Fahad Syed (fahad.syed@vtt.fi)
 """
 
-import os
-import sys
-import traceback
-sys.path.append("model_reconstruction_pipeline")
+import sys, os
+sys.path.append("%s/model_reconstruction_pipeline" % (os.path.abspath(os.path.dirname(__file__))))
 import NGS_Util
 import NGS_Blast
 import ScriptsDir
@@ -28,7 +26,6 @@ ec_files          = ProjectDir.ec_files
 ec2go             = ProjectDir.ec2go
 uniprot_sprot_dat = ProjectDir.uniprot_sprot_dat
 
-
 orgListFile       = ProjectDir.orgListFile
 orgFastaDir       = ProjectDir.orgFastaDir
 
@@ -37,7 +34,6 @@ orgBlastDustDir   = ProjectDir.orgBlastDustDir
 
 orgBlastResDir    = ProjectDir.orgBlastResDir
 jointBlastDir     = ProjectDir.jointBlastDir
-
 
 nrdb40_fasta        = ProjectDir.nrdb40_fasta
 nrdb40_blast_db     = ProjectDir.nrdb40_blast_db
@@ -56,10 +52,8 @@ seq_org_list        = ProjectDir.seq_org_list
 numberNearestHits = 50
 blastEValue	    = ProjectDir.blastEValue
 
-
 orgIPRScanDir               = ProjectDir.orgIPRScanDir
 InterProScan_EC_RAW_results = ProjectDir.InterProScan_EC_RAW_results
-
 
 phylogeneticTreeFile = ProjectDir.phylogeneticTreeFile
 modelTrainingDir     = ProjectDir.modelTrainingDir

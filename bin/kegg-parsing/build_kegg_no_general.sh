@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -u
+set -e
+
 echo "Building a version of KEGG with no general reactions"
 
 RUNDIR=`pwd`
@@ -80,7 +83,6 @@ else
     echo "" > $ADIR/cofactors
     if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 fi
-
 
 
 echo ""

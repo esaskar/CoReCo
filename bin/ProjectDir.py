@@ -3,8 +3,8 @@
 Author: M. Fahad Syed (fahad.syed@vtt.fi)
 """
 
-import sys
-sys.path.append("model_reconstruction_pipeline")
+import sys, os
+sys.path.append("%s/model_reconstruction_pipeline" % (os.path.abspath(os.path.dirname(__file__))))
 import NGS_Util
 import ScriptsDir
 
@@ -41,7 +41,8 @@ ec2go             = NGS_Util.createFilePath(projectDataDir, "Uniprot_EC_GO_Data/
 ##########################################################################################     Sequence Data      ##########################################################################################
 
 orgListFile       = NGS_Util.createFilePath(projectDataDir, "org_list")
-orgFastaDir       = NGS_Util.createDirectoryPath(projectDataDir, "org_sequence_db")     
+orgFastaDir       = NGS_Util.createDirectoryPath(projectDataDir, "org_sequence_db")
+NGS_Util.createDirectory(orgFastaDir)
 seq_org_list      = NGS_Util.createFilePath(projectDataDir, "seq_org_list.txt")
 
 taxonomy          = NGS_Util.createFilePath(projectDataDir, "taxonomy")

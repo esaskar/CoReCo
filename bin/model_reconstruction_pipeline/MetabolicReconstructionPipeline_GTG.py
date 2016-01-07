@@ -12,34 +12,22 @@ import NGS_Blast
 sys.path.append("..")
 import ScriptsDir
 
-
 sys.path.append(ScriptsDir.GTGScripts)
 
 class MetabolicReconstructionPipeline_GTG:
-
     nrdb40_blast_db  = ""
-    
     ec_files          = ""     #need to be initialized     
-
     ngsBlast          = NGS_Blast.NGS_Blast()
-    
     orgListFile       = ""  #Name of file containing Organisms List                  #need to be initialized     
     orgFastaDir       = ""  #Directory path containing organisms fasta sequences     #need to be initialized     
-
     orgBlastDBDir     = ""  #Directory path for organisms BLASTable databases        #need to be initialized     
     orgBlastDustDir   = ""  #Directory path for organisms DUST  files                #need to be initialized     
-
-    
     orgGTGDatabaseDir   = ""  #Directory containing GTG input                        #need to be initialized     
-    
     orgGTGBlastResDir   = ""  #Directory to store blast outputs                        #need to be initialized     
     GTGFungiBestHitsDir = ""  #Directory to store joint blast rectified outputs        #need to be initialized
     GTGKNNDir      = ""  #Directory to store joint blast rectified outputs        #need to be initialized
-    
     CAA1Dir = ""     #need to be initialized     
-    
     nids_up = ""     #need to be initialized
-    
     seq_org_list = ""  #need to be absolute
     
     numberNearestHits = 50
@@ -73,9 +61,9 @@ class MetabolicReconstructionPipeline_GTG:
     def blast_org_vs_nr40_blast_formatted_11(self, organismName):
         print "blast_org_vs_nr40_blast_formatted_11: " + organismName
         org_fasta = NGS_Util.createFilePath(self.orgFastaDir, organismName + ".faa")
-	    org_vs_nr40BlastDB_f11 = NGS_Util.createFilePath(self.orgGTGBlastResDir, organismName + ".nrdb40_v2.txt")
-	    self.ngsBlast.blastP(self.nrdb40_blast_db, org_fasta,  11, org_vs_nr40BlastDB_f11, self.blastEValue)
-	    return org_vs_nr40BlastDB_f11
+        org_vs_nr40BlastDB_f11 = NGS_Util.createFilePath(self.orgGTGBlastResDir, organismName + ".nrdb40_v2.txt")
+        self.ngsBlast.blastP(self.nrdb40_blast_db, org_fasta,  11, org_vs_nr40BlastDB_f11, self.blastEValue)
+        return org_vs_nr40BlastDB_f11
 
     def blast_org_vs_nr40_blast_formatted_6(self, organismName, org_vs_nr40BlastDB_f11):
         print "blast_org_vs_nr40_blast_formatted_6: " + organismName
@@ -150,19 +138,19 @@ class MetabolicReconstructionPipeline_GTG:
             org_gtg_knn_final = NGS_Util.createFilePath(self.GTGKNNDir, organismNameID + ".gtg.knn")
             if not os.path.exists(org_gtg_knn_final):
 
-        print "getGTGScore : " +organismName
+                print "getGTGScore : " +organismName
 
-        org_vs_nr40BlastDB_f11 = self.blast_org_vs_nr40_blast_formatted_11( organismName)
-        org_vs_nr40BlastDB_f6  = self.blast_org_vs_nr40_blast_formatted_6( organismName, org_vs_nr40BlastDB_f11)
+                org_vs_nr40BlastDB_f11 = self.blast_org_vs_nr40_blast_formatted_11( organismName)
+                org_vs_nr40BlastDB_f6  = self.blast_org_vs_nr40_blast_formatted_6( organismName, org_vs_nr40BlastDB_f11)
 
-        org_vs_nr40BlastDB_f11_part1 = self.extract_seq_fmt11( organismName, org_vs_nr40BlastDB_f11)
-        org_vs_nr40BlastDB_f11_part2 = self.extract_start_len_fmt11( organismName, org_vs_nr40BlastDB_f11)
-        org_vs_nr40BlastDB_f11_part1_part2_result = self.extract_combine_seq_start_len_fmt11( organismName, org_vs_nr40BlastDB_f11_part1, org_vs_nr40BlastDB_f11_part2)
-        org_vs_nr40BlastDB_result_final = self.reform( organismName, org_vs_nr40BlastDB_f6, org_vs_nr40BlastDB_f11_part1_part2_result)
-        org_vs_nr40BlastDB_best_hit     = self.extract_best_hit( organismNameID, org_vs_nr40BlastDB_result_final)
-        org_gtg                         = self.extract_gtg( organismNameID, org_vs_nr40BlastDB_best_hit)
-        org_gtg_knn                     = self.gtgknn( organismNameID, org_gtg, self.numberNearestHits)
-        org_gtg_knn_final               = self.reform_knn( organismNameID, org_gtg_knn)
+                org_vs_nr40BlastDB_f11_part1 = self.extract_seq_fmt11( organismName, org_vs_nr40BlastDB_f11)
+                org_vs_nr40BlastDB_f11_part2 = self.extract_start_len_fmt11( organismName, org_vs_nr40BlastDB_f11)
+                org_vs_nr40BlastDB_f11_part1_part2_result = self.extract_combine_seq_start_len_fmt11( organismName, org_vs_nr40BlastDB_f11_part1, org_vs_nr40BlastDB_f11_part2)
+                org_vs_nr40BlastDB_result_final = self.reform( organismName, org_vs_nr40BlastDB_f6, org_vs_nr40BlastDB_f11_part1_part2_result)
+                org_vs_nr40BlastDB_best_hit     = self.extract_best_hit( organismNameID, org_vs_nr40BlastDB_result_final)
+                org_gtg                         = self.extract_gtg( organismNameID, org_vs_nr40BlastDB_best_hit)
+                org_gtg_knn                     = self.gtgknn( organismNameID, org_gtg, self.numberNearestHits)
+                org_gtg_knn_final               = self.reform_knn( organismNameID, org_gtg_knn)
         orgListFile_fh.close() 
 
             
