@@ -10,6 +10,8 @@ modeldir = sys.argv[3]  # where to find model ECs
 odir = sys.argv[4]         # output dir
 
 for s in orgf:
+    if s.startswith("#"):
+        continue
     orgshort, orglong = s.strip().split()
     print orglong
     ecscoresfn = "%s/%s.ecscores" % (ecsdir, orglong)

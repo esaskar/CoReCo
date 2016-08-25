@@ -6,15 +6,17 @@ Author: M. Fahad Syed (fahad.syed@vtt.fi)
 import sys, os
 sys.path.append("%s/model_reconstruction_pipeline" % (os.path.abspath(os.path.dirname(__file__))))
 import NGS_Util
-import config
+from config import config, parse_config
 
 projectDir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-###     Blast Toolkit      ####################################################
+# initialize global configuration config.config
 
 config_file = "%s/config/coreco.config" % (projectDir)
 sys.stderr.write("Reading configuration from %s\n" % (config_file))
-config = config.parse_config(config_file)
+parse_config(config_file)
+
+###     Blast Toolkit      ####################################################
 
 BlastDir     = config["blast_dir"]        # "Tools/ncbi-blast-2.2.30+/bin/"
 BlastDBDir   = config["blast_db_dir"]     # "Tools/ncbi-blast-2.2.30+/db/"   #Needs to be set the user#

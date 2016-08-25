@@ -32,29 +32,23 @@ def import_cpds(cpdfn, outdir):
         os.mkdir(target)
     except:
         pass
-    shutil.copy("%s.blastpos" % (cpdfn), "%s/blastpos" % (target))
-    shutil.copy("%s.blastneg" % (cpdfn), "%s/blastneg" % (target))
-    shutil.copy("%s.gtgpos" % (cpdfn), "%s/gtgpos" % (target))
-    shutil.copy("%s.gtgneg" % (cpdfn), "%s/gtgneg" % (target))
+    shutil.copy("%s.pos.blast" % (cpdfn), "%s/blastpos" % (target))
+    shutil.copy("%s.neg.blast" % (cpdfn), "%s/blastneg" % (target))
+    shutil.copy("%s.pos.gtg" % (cpdfn), "%s/gtgpos" % (target))
+    shutil.copy("%s.neg.gtg" % (cpdfn), "%s/gtgneg" % (target))
 
 def import_tree(treefn, outdir):
     shutil.copy(treefn, "%s/tree" % (outdir))
 
-
 def do_import(orglistfn, scoredir, cpddir, treefn, outdir, treecpd):
     #copy tree.cpds and org_list.backup to target dir
-    #?
 
-    try:
-        shutil.copy(treecpd, "%s/%s" % (outdir, common.TREE_CPD_FILE))
-        shutil.copy(orglistfn, "%s/%s" % (outdir, common.ORGANISM_LIST_FILE))
-        org_abbr, org_long = common.read_organisms(outdir)
-        import_scores(org_abbr, scoredir, outdir)
-        import_cpds(cpddir, outdir)   
-        import_tree(treefn, outdir)
-    except Exception:
-        print traceback.print_exc()
-
+    shutil.copy(treecpd, "%s/%s" % (outdir, common.TREE_CPD_FILE))
+    shutil.copy(orglistfn, "%s/%s" % (outdir, common.ORGANISM_LIST_FILE))
+    org_abbr, org_long = common.read_organisms_dir(outdir)
+    import_scores(org_abbr, scoredir, outdir)
+    import_cpds(cpddir, outdir)   
+    import_tree(treefn, outdir)
     
 if __name__ == "__main__":
     orglistfn = sys.argv[1] # species list, e.g., org_list

@@ -10,9 +10,9 @@ import ScriptsDir
 
 projectDir       = ScriptsDir.projectDir  #Needs to be set the user#
 
-projectBinDir    = NGS_Util.createDirectoryPath(projectDir,"bin")
-projectDataDir   = NGS_Util.createDirectoryPath(projectDir,"data")
-projectResultDir = NGS_Util.createDirectoryPath(projectDir,"results")
+projectBinDir    = NGS_Util.createDirectoryPath(projectDir, "bin")
+projectDataDir   = NGS_Util.createDirectoryPath(projectDir, "data")
+projectResultDir = NGS_Util.createDirectoryPath(projectDir, "results")
 
 ##########################################################################################     Blast Toolkit      ##########################################################################################
 
@@ -36,7 +36,7 @@ ec2rxnFile         	= NGS_Util.createFilePath(keggDataDir,"aux/ec-list.txt")
 ##########################################################################################     EC Go Data Files   ##########################################################################################
 
 ec_files          = NGS_Util.createFilePath(projectDataDir, "Uniprot_EC_GO_Data/ec_files.txt")
-ec2go             = NGS_Util.createFilePath(projectDataDir, "Uniprot_EC_GO_Data/ec2go.txt")      
+ec2go             = NGS_Util.createFilePath(projectDataDir, "Uniprot_EC_GO_Data/ec2go")
 
 ##########################################################################################     Sequence Data      ##########################################################################################
 
@@ -56,7 +56,7 @@ nrdb40_dust     = NGS_Util.createFilePath(orgBlastDustDir, "nrdb40_dust.asnb")
 nrdb40_blast_db = NGS_Util.createFilePath(orgBlastDBDir, "nrdb40")
 
 ##########################################################################################     Sequence Blast Output  ######################################################################################
-blastEValue   	  = 10
+#blastEValue   	  = 10
 uniprotDBSize     = 191456931
 
 orgBlastResDir    = NGS_Util.createDirectoryPath(projectResultDir, "blast_results")

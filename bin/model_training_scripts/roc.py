@@ -197,7 +197,7 @@ def compute_roc_curves(models, scores, all_ecs, roc_dir = common.ROC_CURVE_DIR):
         plot_single(ddir, species, roc_dir, "pdf")
         plot_single(ddir, species, roc_dir, "png")
 
-    subprocess.call("rm *.Rout", shell = True)
+    subprocess.call("rm -f *.Rout", shell = True)
 
 def roc(ddir, mdir, remove_partial = FILTER_PARTIAL_ECS):
     print "Reading models..."
@@ -252,7 +252,7 @@ def roc_one(ddir, modelfn, species, outdir, remove_partial = FILTER_PARTIAL_ECS)
     plot_single(ddir, species, outdir, "pdf")
     plot_single(ddir, species, outdir, "png")
 
-    subprocess.call("rm *.Rout", shell = True)   
+    subprocess.call("rm -f *.Rout", shell = True)   
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:

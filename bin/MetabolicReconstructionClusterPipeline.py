@@ -12,22 +12,22 @@ import NGS_Blast
 import ScriptsDir
 import ProjectDir
 
-import MetabolicReconstructionPipeline_Blast
-import MetabolicReconstructionPipeline_GTG
-import MetabolicReconstructionPipeline_IPRScan
-import MetabolicReconstructionPipeline_PreProcess
-import MetabolicReconstructionPipeline_PreProcess_newreactions
+import Blast
+import GTG
+import IPRScan
+import PreProcess
+import PreProcess_newreactions
 
-import MetabolicReconstructionPipeline_ModelTraining
-import MetabolicReconstructionPipeline_NetworkReconstruction
+import ModelTraining
+import NetworkReconstruction
 
-import MetabolicReconstructionPipeline_ClusterBlast
-import MetabolicReconstructionPipeline_ClusterIPRScan
-import MetabolicReconstructionPipeline_ClusterGTG
-import MetabolicReconstructionPipeline_ClusterNetworkReconstruction
+import ClusterBlast
+import ClusterIPRScan
+import ClusterGTG
+import ClusterNetworkReconstruction
 
-import MetabolicReconstructionPipeline_ClusterCreateSBML
-import MetabolicReconstructionPipeline_ClusterUtil
+import ClusterCreateSBML
+import ClusterUtil
 
 projectDir        		= ProjectDir.projectDir
 orgGTGDatabaseDir               = ProjectDir.orgGTGDatabaseDir
@@ -110,13 +110,13 @@ try:
 
     mode = int(sys.argv[1])
 
-    clusterUtil = MetabolicReconstructionPipeline_ClusterUtil.MetabolicReconstructionPipeline_ClusterUtil()
+    clusterUtil = ClusterUtil.ClusterUtil()
     clusterUtil.initialize(orgListFile, orgFastaDir,  orgBlastResDir, jointBlastDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, orgIPRScanDir, InterProScan_EC_RAW_results, moveToDir)
 
     if mode == 0:
 
         pathToSeqs = NGS_Util.createFilePath(moveToDir, "data/org_sequence_db/")        
-        preProcess = MetabolicReconstructionPipeline_PreProcess.MetabolicReconstructionPipeline_PreProcess()
+        preProcess = PreProcess.PreProcess()
         preProcess.initialize(uniprot_fasta, uniprot_dust, uniprot_blast_db,  nrdb40_fasta, nrdb40_dust, nrdb40_blast_db, orgListFile, orgFastaDir, seq_org_list, orgBlastDBDir, orgBlastDustDir, ec_files, uniprot_sprot_dat, keggAtomMapsDataDir )
         preProcess.preProcess()
 
@@ -191,7 +191,7 @@ try:
         if not successStat:
             raise Exception("Missing required input files")
 
-        gtg = MetabolicReconstructionPipeline_ClusterGTG.MetabolicReconstructionPipeline_ClusterGTG()
+        gtg = ClusterGTG.ClusterGTG()
         gtg.initialize(nrdb40_blast_db, ec_files, orgListFile, orgFastaDir,  orgBlastDBDir, orgBlastDustDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, CAA1Dir, nids_up, seq_org_list, numberNearestHits, orgGTGDatabaseDir,blastEValue)
         gtg.getGTGScore(mode)
     
@@ -208,7 +208,7 @@ try:
         if not successStat:
             raise Exception("Missing required input files")
 
-        iprscan = MetabolicReconstructionPipeline_ClusterIPRScan.MetabolicReconstructionPipeline_ClusterIPRScan()
+        iprscan = ClusterIPRScan.ClusterIPRScan()
         iprscan.initialize(orgListFile, orgFastaDir,  orgIPRScanDir, InterProScan_EC_RAW_results, ec2go, seq_org_list, numberOfFragments)
         iprscan.getIPRScanScore(mode)
  
@@ -227,7 +227,7 @@ try:
         if not successStat:
             raise Exception("Missing required input files")
 
-        blast = MetabolicReconstructionPipeline_ClusterBlast.MetabolicReconstructionPipeline_ClusterBlast()
+        blast = ClusterBlast.ClusterBlast()
         blast.initialize(uniprot_fasta, ec_files, uniprot_blast_db, orgListFile, orgFastaDir , orgBlastDBDir, orgBlastDustDir, orgBlastResDir, jointBlastDir, blastEValue, uniprotDBSize)
         blast.numberOfFragments = numberOfFragments
         blast.getBlastScore(mode)       
@@ -235,7 +235,7 @@ try:
 
     if mode == 5:
         
-        clusterUtil = MetabolicReconstructionPipeline_ClusterUtil.MetabolicReconstructionPipeline_ClusterUtil()
+        clusterUtil = ClusterUtil.ClusterUtil()
         moveToDirResults=NGS_Util.createFilePath(moveToDir, "results/")
         clusterUtil.initialize(orgListFile, orgFastaDir,  orgBlastResDir, jointBlastDir, orgGTGBlastResDir, GTGBestHitsDir, GTGKNNDir, orgIPRScanDir, InterProScan_EC_RAW_results, moveToDirResults)
         clusterUtil.moveResults()
@@ -251,7 +251,7 @@ try:
         if not successStat:
             raise Exception("Missing required input files")
 
-        modelTraining = MetabolicReconstructionPipeline_ModelTraining.MetabolicReconstructionPipeline_ModelTraining()
+        modelTraining = ModelTraining.ModelTraining()
         modelTraining.initialize(orgListFile, jointBlastDir, GTGKNNDir, InterProScan_EC_RAW_results, phylogeneticTreeFile, modelTrainingDir)
         modelTraining.runModelTrainingAlgo()
         
@@ -272,7 +272,7 @@ try:
         if not successStat:
             raise Exception("Missing required input files")
 
-        networkReconstruction = MetabolicReconstructionPipeline_ClusterNetworkReconstruction.MetabolicReconstructionPipeline_ClusterNetworkReconstruction()
+        networkReconstruction = ClusterNetworkReconstruction.ClusterNetworkReconstruction()
         networkReconstruction.initialize(boundFile, exchangeFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList)
         networkReconstruction.doNetworkReconstruction()
            
@@ -292,7 +292,7 @@ try:
         if not successStat:
             raise Exception("Missing required input files")
     
-        createSBML = MetabolicReconstructionPipeline_ClusterCreateSBML.MetabolicReconstructionPipeline_ClusterCreateSBML()  
+        createSBML = ClusterCreateSBML.ClusterCreateSBML()  
         createSBML.initialize(boundFile, pathwayFile, rxnNamesFile, modelTrainingModelDir, intAaccept, intReject, keggDataDir, ec2rxnFile, taxonomy, networkReconstructionOrgList)
         createSBML.doCreateSBML()
            

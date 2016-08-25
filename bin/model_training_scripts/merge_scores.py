@@ -9,7 +9,7 @@ scoredir = sys.argv[2]   # dir with .ecscores
 o = open("%s/%s" % (ddir, common.FULL_REACTION_SCORE_FILE), "w")
 
 rscores, ecs = common.read_scores(ddir)
-org_abbr, org_long = common.read_organisms(ddir)
+org_abbr, org_long = common.read_organisms_dir(ddir)
 
 fns = os.listdir(scoredir)
 scores = {}

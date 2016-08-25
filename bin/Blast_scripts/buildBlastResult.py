@@ -7,19 +7,18 @@ import sys, datetime
 # f2 is Organism->db;  f3 is db->Organism
 
 def combineBlasts(f, f2, f3, o):
-
     print "Reading uniprot -> EC..."
     up2ec = {}
     for s in f:
         if s.startswith("#"):
             continue
         apu = s.strip().split() 
-        uid=apu[0]
-        pext=apu[1]
-        if len(apu)==3:
-            ec=apu[2]
+        uid = apu[0]
+        pext = apu[1]
+        if len(apu) == 3:
+            ec = apu[2]
         else:
-            ec="?"
+            ec = "?"
         up2ec[uid] = [pext, []]
         up2ec[uid][1] = ec.split(",")        
     blastres = {}
@@ -27,13 +26,11 @@ def combineBlasts(f, f2, f3, o):
     # org -> uniprot blast
     print "Reading org -> uniprot blast results..."
     for s in f2:
-        sseqid, qseqid, pident, length, mismatch, gapopen, qstart, qend, sstart, send, evalue, bitscore = s.strip().split("\t")
-        
+        sseqid, qseqid, pident, length, mismatch, gapopen, qstart, qend, sstart, send, evalue, bitscore = s.strip().split("\t")        
         if sseqid not in blastres:
             blastres[sseqid] = {}
         blastres[sseqid][qseqid] = [evalue, float(bitscore), "?", "?"]
 
-    # Su: you can remove this segment (the for loop) as unnecessary
     # uniprot -> org blast
     print "Reading uniprot -> org blast results..."
     for s in f3:
@@ -70,11 +67,11 @@ def combineBlasts(f, f2, f3, o):
                 ecs = ["?"]
             for ec in ecs:
                 o.write("%s\t%s\t%s\t%s\t%s\n" % (s, upacc, pext, ec, "\t".join(map(str, blastres[s][q]))))
-
-    
+   
 if __name__ == "__main__":
     f = open(sys.argv[1])   # UniProt ID -> EC list
     f2 = open(sys.argv[2])  # blast res org -> uniprot
     f3 = open(sys.argv[3])  # blast res uniprot -> org
     o = open(sys.argv[4], "w")   # output
     combineBlasts(f, f2, f3, o)
+

@@ -17,7 +17,7 @@ traceLog     = "../TraceLog.txt"
 executionLog = "../ExecutionLog.txt"
 errorLog     = "../ErrorLog.txt"
 
-def createFilePath(dirPath,fileName):
+def createFilePath(dirPath, fileName):
     path = ""
     length = len(dirPath)
     if dirPath.find("/", length-1) == -1:
@@ -26,7 +26,7 @@ def createFilePath(dirPath,fileName):
         path = dirPath + fileName
     return path
 
-def createDirectoryPath(path,dirName):
+def createDirectoryPath(path, dirName):
     dirPath = ""
     length = len(path)
     if path.find("/", length-1) == -1:
@@ -37,8 +37,8 @@ def createDirectoryPath(path,dirName):
 
 def createDirectory(dirPath):
     if dirPath != None:
-        if not os.path.exists(dirPath):
-            os.mkdir(dirPath)
+        if os.path.exists(dirPath) == False:
+            os.makedirs(dirPath)
         return dirPath
     return None
 
@@ -62,8 +62,8 @@ def executeCall(call):
     executionLogFile.write(call + "\n\n")
     errorLogFile.write(now + "\n\n")
     errorLogFile.write(call + "\n\n")
-#    subprocess.check_call(call, stdout=executionLogFile, stderr=errorLogFile, shell=True)
-    subprocess.check_call(call.split(" "), stdout=executionLogFile, stderr=errorLogFile)
+    subprocess.check_call(call, stdout=executionLogFile, stderr=errorLogFile, shell=True)  # calls may include pipes -> shell needs to be True
+#    subprocess.check_call(call.split(" "), stdout=executionLogFile, stderr=errorLogFile)
     errorLogFile.close()
     executionLogFile.close()
 

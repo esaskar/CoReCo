@@ -122,6 +122,8 @@ def parse_cpd(f):
     cpd = {}
     f.readline() # header
     for s in f:
+        if s.startswith("#"):
+            continue
         ix, x, density, p = s.strip().split()
         ix = int(ix.strip("\""))
         x = point_to_str(float(x))

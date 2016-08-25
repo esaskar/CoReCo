@@ -33,7 +33,7 @@ REACTION_SCORE_FILE = "reaction-scores" # not needed, so presumably hard coded e
 FULL_REACTION_SCORE_FILE = "reaction-scores.full" # needed in merge_scores.py currently not used in CoReCo
 ROC_CURVE_DIR = "rocs" # needed in roc.py currently not used in CoReCo
 CPD_DIR = "cpds" # needed in compute_reaction_scores.py currently not used in CoReCo
-ORGANISM_LIST_FILE = "org_list.backup" #needed in import_data.py and merge_scores.py currently not used in CoReCo
+ORGANISM_LIST_FILE = "org_list" #needed in import_data.py and merge_scores.py currently not used in CoReCo
 
 # Network reconstruction files
 
@@ -184,11 +184,16 @@ def read_dict(f, vsplit = None):
         D[k] = v
     return D
 
-def read_organisms(ddir):
+def read_organisms_dir(ddir):
+    return read_organisms("%s/%s" % (ddir, ORGANISM_LIST_FILE))
+
+def read_organisms(fn):
     orgnames = {}
     longtoshort = {}
-    f = open("%s/%s" % (ddir, ORGANISM_LIST_FILE))
+    f = open(fn)
     for s in f:
+        if s.startswith("#"):
+            continue
         short, lname = s.strip().split()
         orgnames[short] = lname
         longtoshort[lname] = short

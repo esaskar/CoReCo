@@ -7,6 +7,9 @@
 # $2  EC score dir : .ecscore
 # $3  CPD file :all.blastpos/all.blastneg/all.gtgpos/all.gtgneg
 
+set -eu
+set -o pipefail
+
 if [ -z "$1" ]; then
    echo "Specify data directory";
    echo "usage: $0 data-dir [ec-score-dir] [model-file]"
@@ -39,8 +42,6 @@ fi
 #
 #mkdir -p $TARGET_DIR
 
-
-
 SOURCE_DIR=$1
 TARGET_DIR=$2
 EC_SCORE_DIR=$3
@@ -50,32 +51,32 @@ TREE_FILE=$6
 IPRSCAN_MODEL_DIR=$7
 TreeCPD=$8
 
-
+CDIR=$(dirname $(readlink -f "$0"))
 
 echo Importing data to $TARGET_DIR...
-python import_data.py $ORG_LIST $EC_SCORE_DIR $CPD_FILE $TREE_FILE $TARGET_DIR $TreeCPD
+python $CDIR/import_data.py $ORG_LIST $EC_SCORE_DIR $CPD_FILE $TREE_FILE $TARGET_DIR $TreeCPD
 if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 
 echo Copying default parameters...
-cp data/parameters $TARGET_DIR/
+cp $CDIR/data/parameters $TARGET_DIR/
 if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 
 #Write reaction-scores
 echo Computing reaction scores...
-python compute_reaction_scores.py $TARGET_DIR
+python $CDIR/compute_reaction_scores.py $TARGET_DIR
 if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 
 # Write reaction-scores.full
 echo Merging posterior, BLAST and GTG scores...
-python merge_scores.py $TARGET_DIR $EC_SCORE_DIR
+python $CDIR/merge_scores.py $TARGET_DIR $EC_SCORE_DIR
 if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 
 echo Plotting reaction scores...
-python plot_reaction_scores.py $TARGET_DIR
+python $CDIR/plot_reaction_scores.py $TARGET_DIR
 if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 
 echo Plotting ROC curves/IPR models...
-python roc.py $TARGET_DIR $IPRSCAN_MODEL_DIR
+python $CDIR/roc.py $TARGET_DIR $IPRSCAN_MODEL_DIR
 if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 
 #echo Plotting ROC curves/Yeast consensus model...
@@ -91,6 +92,6 @@ if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 #if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 
 echo Drawing EC score trees...
-python visualize_ec_scores.py $TARGET_DIR
+python $CDIR/visualize_ec_scores.py $TARGET_DIR
 if [ $? -ne 0 ]; then echo "Failed"; exit 1; fi
 

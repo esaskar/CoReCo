@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: iso-8859-15 -*-
 """
 Balance KEGG reactions when possible by finding reaction coefficients such that left and right hand sides of reaction equation have equal number of the same atom type and the sum of coefficients is minimized.

@@ -8,9 +8,13 @@ gn = open(sys.argv[3]) #open #SeqId SeqGTGs MatchSeq MatchNID MatchGTGs MatchFra
                        #A2P2R3  438     ?       343972  438     1.000
 o = open(sys.argv[4], "w") #save result
 
+print sys.argv[1]
+
 orgseq={}
 #save all orgseq[org]=[seq1,seq2..seqN]
 for l in ln:
+    if l.startswith("#"):
+        continue
 	seq, org = l.strip().split("\t")
 	if seq not in orgseq:
 		orgseq[seq] = ''
@@ -20,20 +24,22 @@ ln.close()
 seqidec={}
 #save all seqidec[seq]=[id,ecs]
 for f in fn:
-        apu = f.strip().split("\t") 
-        seq=apu[0]
-        id=apu[1]
-        if len(apu)==3:
-            ecs=apu[2]
-        else:
-            ecs="?"
-	#seq, id, ecs = f.strip().split("\t")
-	if seq not in seqidec:
-		seqidec[seq] = ''
-	seqidec[seq] = ecs
+    if f.startswith("#"):
+        continue
+    apu = f.strip().split("\t")
+    seq = apu[0]
+    id = apu[1]
+    if len(apu) == 3:
+        ecs = apu[2]
+    else:
+        ecs = "?"
+    #seq, id, ecs = f.strip().split("\t")
+    if seq not in seqidec:
+        seqidec[seq] = ''
+    seqidec[seq] = ecs
 fn.close()
 
-result={}
+result = {}
 #extract ecs and org for each pairs of query seq VS match seq
 o.write("#Org\tSeqId\tSeqGTGs\tMatchSeq\tMatchNID\tMatchGTGs\tMatchFrac\tEcs\n")
 for g in gn:

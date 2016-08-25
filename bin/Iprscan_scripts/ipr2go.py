@@ -47,16 +47,3 @@ for ipr in keys:
 	GO_term = ",".join(iprs[ipr][1])
 	# write ipr and GO_term accordingly
 	o.write("%s\t%s\n" % (ipr,GO_term))
-
-
-
-
-
-
-	
-
-	
-	
-	
-
-

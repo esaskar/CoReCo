@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 
-import re,sys
+import re, sys
 
 fn = open(sys.argv[1]) #open blast result
 o = open (sys.argv[2],"w") #save output
 
-for f in fn:
-	#print f
-	if f.startswith("#"):
-		o.write("%s" % f)
+for s in fn:
+	if s.startswith("#"):
+		o.write(s)
 		continue
-	tmp = f.strip().split("|")
-
-	if len(tmp) > 1:
-		o.write("%s\n" % tmp[1])
-
+	v = s.strip().split("\t")
+	sid = v[0].split("|")
+	if len(sid) > 1:
+		sid = sid[1]
 	else:
-		o.write("%s\n" % tmp[0])
-	
+		sid = sid[0]
+	o.write("%s\t%s\n" % (sid, "\t".join(v[1:])))
