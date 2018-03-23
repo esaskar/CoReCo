@@ -27,5 +27,5 @@ See doc/CoReCoManual.pdf for installation and usage instructions.
 ## Cite us
 
 * Pitkänen *et al.*, Comparative Genome-Scale Reconstruction of Gapless Metabolic Networks for Present and Ancestral Species. PLOS Computational Biology 2014, [doi:10.1371/journal.pcbi.1003465](https://doi.org/10.1371/journal.pcbi.1003465)
-* Castillo *et al.*, Whole-genome metabolic model of *Trichoderma reesei* built by comparative reconstruction. Biotechnology for Biofuels 2016, [doi:10.1186/s13068-016-0665-0](10.1186/s13068-016-0665-0)
+* Castillo *et al.*, Whole-genome metabolic model of *Trichoderma reesei* built by comparative reconstruction. Biotechnology for Biofuels 2016, [doi:10.1186/s13068-016-0665-0](https://github.com/esaskar/CoReCo/blob/master/10.1186/s13068-016-0665-0)
 
